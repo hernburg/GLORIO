@@ -1,0 +1,25 @@
+workflows:
+  ios-release:
+    name: Build iOS IPA for AltStore
+    environment:
+      flutter: stable
+      xcode: latest
+    scripts:
+      - name: Clean project
+        script: flutter clean
+
+      - name: Install dependencies
+        script: flutter pub get
+
+      - name: Build iOS (no code sign)
+        script: flutter build ios --release --no-codesign
+
+      - name: Create IPA
+        script: |
+          mkdir -p build/ipa/Payload
+          cp -R build/ios/iphoneos/Runner.app build/ipa/Payload/
+          cd build/ipa
+          zip -r ../Runner.ipa Payload
+
+    artifacts:
+      - build/Runner.ipa
