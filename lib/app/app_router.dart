@@ -8,6 +8,7 @@ class AppRouter extends ChangeNotifier {
 
   AppRouter(AuthRepo auth) {
     router = GoRouter(
+      navigatorKey: rootNavigatorKey,   // ОБЯЗАТЕЛЬНО!!!
       initialLocation: '/login',
       refreshListenable: auth,
       redirect: (context, state) {

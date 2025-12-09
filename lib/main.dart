@@ -1,36 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import 'app/app_router.dart';
+import 'app/app.dart';
 
-class FlowerApp extends StatelessWidget {
-  const FlowerApp({super.key});
+import 'data/repositories/auth_repo.dart';
+import 'data/repositories/materials_repo.dart';
+import 'data/repositories/showcase_repo.dart';
+import 'data/repositories/supply_repo.dart';
+import 'data/repositories/sales_repo.dart';
+import 'data/repositories/clients_repo.dart';
+import 'data/repositories/writeoff_repo.dart';
 
-  @override
-  Widget build(BuildContext context) {
-    final appRouter = context.watch<AppRouter>();
+void main() {
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthRepo()),
 
-    return MaterialApp.router(
-      debugShowCheckedModeBanner: false,
-      routerConfig: appRouter.router,   // ← ВАЖНО!
-      theme: _glorioSkyGlassTheme(),
-    );
-  }
+        // AppRouter ТРЕБУЕТ authRepo → получаем его из Provider
+        ChangeNotifierProxyProvider<AuthRepo, AppRouter>(
+          create: (context) => AppRouter(context.read<AuthRepo>()),
+          update: (context, auth, prev) => AppRouter(auth),
+        ),
 
-  ThemeData _glorioSkyGlassTheme() {
-    // осталась твоя тема, оставляй как есть
-    const baseSeed = Color(0xFF74C8FF);
-
-    final colorScheme = ColorScheme.fromSeed(
-      seedColor: baseSeed,
-      brightness: Brightness.light,
-      surfaceTint: Colors.transparent,
-    );
-
-    return ThemeData(
-      useMaterial3: true,
-      colorScheme: colorScheme,
-      scaffoldBackgroundColor: const Color(0xFFB8E2F5),
-      // ... остальное без изменений ...
-    );
-  }
+        ChangeNotifierProvider(create: (_) => MaterialsRepo()),
+        ChangeNotifierProvider(create: (_) => ShowcaseRepo()),
+        ChangeNotifierProvider(create: (_) => SupplyRepository ()),
+        ChangeNotifierProvider(create: (_) => SalesRepo()),
+        ChangeNotifierProvider(create: (_) => ClientsRepository()),
+        ChangeNotifierProvider(create: (_) => WriteoffRepository()),
+      ],
+      child: const FlowerApp(),
+    ),
+  );
 }
