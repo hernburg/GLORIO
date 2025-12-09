@@ -50,7 +50,7 @@ class RootShell extends StatelessWidget {
       body: child,
       bottomNavigationBar: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(15),
+          padding: const EdgeInsets.fromLTRB(15, 15, 15, 36),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(30),
             child: BackdropFilter(
@@ -94,17 +94,17 @@ class RootShell extends StatelessWidget {
                         children: [
                           // Пузырь-лупа под активным пунктом
                           AnimatedAlign(
-  duration: const Duration(milliseconds: 260),
-  curve: Curves.easeOutCubic,
-  alignment: Alignment(alignX, 0),
-  child: FractionallySizedBox(
-    widthFactor: 1 / itemsCount,
-    child: ClipRRect(
-      borderRadius: BorderRadius.circular(22),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                          duration: const Duration(milliseconds: 260),
+                         curve: Curves.easeOutCubic,
+                          alignment: Alignment(alignX, 0),
+                            child: FractionallySizedBox(
+                             widthFactor: 1 / itemsCount,
+                             child: ClipRRect(
+                              borderRadius: BorderRadius.circular(22),
+                                child: BackdropFilter(
+                                  filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
         child: Container(
-          height: 50,
+          height: 100,
           decoration: BoxDecoration(
             // более «стеклянная» прозрачность
             gradient:
@@ -121,7 +121,7 @@ class RootShell extends StatelessWidget {
             // светлый стеклянный блик по контуру
              border: Border.all(
               color: Colors.white.withOpacity(0.45),
-              width: 1.2,
+              width: 1.6,
             ),
 
             // мягкая тень для объёма

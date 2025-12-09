@@ -94,6 +94,8 @@ class _SalesListScreenState extends State<SalesListScreen> {
                           Expanded(
                             child: GestureDetector(
                               onTap: () => setState(() => tabIndex = 0),
+                              child: SizedBox(
+                              height: 36,
                               child: Center(
                                 child: Text(
                                   "В продаже",
@@ -107,10 +109,13 @@ class _SalesListScreenState extends State<SalesListScreen> {
                                 ),
                               ),
                             ),
+                            ),
                           ),
                           Expanded(
                             child: GestureDetector(
                               onTap: () => setState(() => tabIndex = 1),
+                              child: SizedBox(
+                              height: 36,
                               child: Center(
                                 child: Text(
                                   "Продано",
@@ -123,6 +128,7 @@ class _SalesListScreenState extends State<SalesListScreen> {
                                   ),
                                 ),
                               ),
+                            ),
                             ),
                           ),
                         ],
