@@ -1,26 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'app/app_router.dart';
 
-import 'app/app.dart';
+class FlowerApp extends StatelessWidget {
+  const FlowerApp({super.key});
 
-// РЕПОЗИТОРИИ
-import 'data/repositories/supply_repo.dart';
-import 'data/repositories/showcase_repo.dart';
-import 'data/repositories/materials_repo.dart';
-import 'data/repositories/sales_repo.dart';
-// Добавишь остальные по мере необходимости
+  @override
+  Widget build(BuildContext context) {
+    final appRouter = context.watch<AppRouter>();
 
-void main() {
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => MaterialsRepo()),
-        ChangeNotifierProvider(create: (_) => SupplyRepository()),
-        ChangeNotifierProvider(create: (_) => ShowcaseRepo()),
-        ChangeNotifierProvider(create: (_) => SalesRepo()),
-        // Добавишь: ClientsRepo, WriteoffRepo, ReportsRepo
-      ],
-      child: const FlowerApp(),
-    ),
-  );
+    return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
+      routerConfig: appRouter.router,   // ← ВАЖНО!
+      theme: _glorioSkyGlassTheme(),
+    );
+  }
+
+  ThemeData _glorioSkyGlassTheme() {
+    // осталась твоя тема, оставляй как есть
+    const baseSeed = Color(0xFF74C8FF);
+
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: baseSeed,
+      brightness: Brightness.light,
+      surfaceTint: Colors.transparent,
+    );
+
+    return ThemeData(
+      useMaterial3: true,
+      colorScheme: colorScheme,
+      scaffoldBackgroundColor: const Color(0xFFB8E2F5),
+      // ... остальное без изменений ...
+    );
+  }
 }

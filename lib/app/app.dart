@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
-import 'router.dart';
+import 'package:provider/provider.dart';
+import 'app_router.dart';
 
 class FlowerApp extends StatelessWidget {
   const FlowerApp({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final appRouter = context.watch<AppRouter>();
+
     return MaterialApp.router(
+      routerConfig: appRouter.router,
       debugShowCheckedModeBanner: false,
-      routerConfig: router,
       theme: _glorioSkyGlassTheme(),
     );
   }
+}
 
   ThemeData _glorioSkyGlassTheme() {
     // Основной фирменный небесный цвет
@@ -137,4 +141,3 @@ class FlowerApp extends StatelessWidget {
       ),
     );
   }
-}

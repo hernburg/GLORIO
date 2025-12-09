@@ -19,10 +19,6 @@ class ShowcaseListScreen extends StatelessWidget {
     final items = showcase.products;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Витрина'),
-        centerTitle: true,
-      ),
 
       floatingActionButton: AddButton(
         onTap: () => context.push('/assemble'),
@@ -76,6 +72,9 @@ class _ShowcaseCard extends StatelessWidget {
       quantity: 1,
       price: item.sellingPrice,
       date: DateTime.now(),
+      ingredients: item.ingredients.map((ing) {
+        return SoldIngredient(materialId: ing.materialId, usedQuantity: ing.quantity);
+      }).toList(),
     );
 
     salesRepo.addSale(sale);

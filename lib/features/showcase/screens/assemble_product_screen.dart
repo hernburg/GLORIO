@@ -169,7 +169,6 @@ class _AssembleProductScreenState extends State<AssembleProductScreen> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(title: const Text('Сборка букета')),
         body: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(

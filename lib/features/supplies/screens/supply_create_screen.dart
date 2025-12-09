@@ -173,7 +173,7 @@ class _SupplyCreateScreenState extends State<SupplyCreateScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: save,
-                child: const Text('Сохранить поставку'),
+                child: const Text('Сохранить позицию'),
               ),
             ),
           ],

@@ -25,10 +25,6 @@ class _SalesListScreenState extends State<SalesListScreen> {
     final sales = context.watch<SalesRepo>().sales;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Продажи"),
-        centerTitle: true,
-      ),
       body: Column(
         children: [
           const SizedBox(height: 12),
@@ -234,23 +230,37 @@ class _SalesListScreenState extends State<SalesListScreen> {
   // -------------------------------
   //         ЛОГИКА ПРОДАЖ
   // -------------------------------
-  void _sell(product) {
-    final salesRepo = context.read<SalesRepo>();
-    final showcaseRepo = context.read<ShowcaseRepo>();
+void _sell(product) {
+  final salesRepo = context.read<SalesRepo>();
+  final showcaseRepo = context.read<ShowcaseRepo>();
+  final materialsRepo = context.read<MaterialsRepo>();
+  final suppliesRepo = context.read<SupplyRepository>();
 
-    final sale = Sale(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      product: product,
-      quantity: 1,
-      price: product.sellingPrice,
-      date: DateTime.now(),
-    );
+  final sale = Sale(
+    id: DateTime.now().millisecondsSinceEpoch.toString(),
+    product: product,
+    quantity: 1,
+    price: product.sellingPrice,
+    date: DateTime.now(),
+    ingredients: product.ingredients.map((ing) {
+      return SoldIngredient(
+        materialId: ing.materialId,
+        usedQuantity: ing.quantity,
+      );
+    }).toList(),
+  );
 
-    salesRepo.addSale(sale);
-    showcaseRepo.removeProduct(product);
+  salesRepo.addSale(sale);
+  showcaseRepo.removeProduct(product);
 
-    setState(() => tabIndex = 1);
+  // списываем материалы
+  for (final ing in product.ingredients) {
+    materialsRepo.returnQuantity(ing.materialId, ing.quantity);
+    suppliesRepo.returnFromBouquet(ing.materialId, ing.quantity);
   }
+
+  setState(() => tabIndex = 1);
+}
 
   void _dismantle(product) {
     final showcaseRepo = context.read<ShowcaseRepo>();

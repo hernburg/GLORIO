@@ -15,10 +15,6 @@ class SuppliesListScreen extends StatelessWidget {
     final supplies = repo.supplies;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Поставки"),
-        centerTitle: true,
-      ),
 
       body: supplies.isEmpty
           ? const Center(
