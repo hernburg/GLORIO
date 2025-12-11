@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flower_accounting_app/core/widgets/add_button.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -126,8 +127,22 @@ class _AssembleProductScreenState extends State<AssembleProductScreen> {
   }
 
   @override
-Widget build(BuildContext context) {
-  return Scaffold(
+  Widget build(BuildContext context) {
+    ImageProvider? imageProvider;
+    if (photoUrl != null && photoUrl!.trim().isNotEmpty) {
+      final value = photoUrl!.trim();
+      final uri = Uri.tryParse(value);
+
+      if (uri != null &&
+          uri.hasAbsolutePath &&
+          (uri.scheme == 'http' || uri.scheme == 'https')) {
+        imageProvider = NetworkImage(value);
+      } else if (!kIsWeb && File(value).existsSync()) {
+        imageProvider = FileImage(File(value));
+      }
+    }
+
+    return Scaffold(
     floatingActionButton: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -160,15 +175,15 @@ Widget build(BuildContext context) {
                   decoration: BoxDecoration(
                     color: Colors.grey.shade200,
                     borderRadius: BorderRadius.circular(14),
-                    image: photoUrl != null
+                    image: imageProvider != null
                         ? DecorationImage(
-                            image: FileImage(File(photoUrl!)),
+                            image: imageProvider!,
                             fit: BoxFit.cover,
                           )
                         : null,
                   ),
                   alignment: Alignment.center,
-                  child: photoUrl == null
+                  child: imageProvider == null
                       ? const Text(
                           "Загрузить фото",
                           style: TextStyle(color: Colors.black54),
@@ -207,8 +222,10 @@ Widget build(BuildContext context) {
               Expanded(
                 child: ListView(
                   children: ingredients.map((ing) {
+                    final materialName =
+                        context.read<MaterialsRepo>().getById(ing.materialId)?.name;
                     return ListTile(
-                      title: Text("ID: ${ing.materialId}"),
+                      title: Text(materialName ?? "ID: ${ing.materialId}"),
                       subtitle: Text(
                         "${ing.quantity} × ${ing.costPerUnit} ₽ = "
                         "${ing.totalCost.toStringAsFixed(0)} ₽",
@@ -314,38 +331,38 @@ class _IngredientSelectorState extends State<IngredientSelector> {
   }
 
   void _enterQty(BuildContext context, MaterialItem m) {
-  final qtyCtrl = TextEditingController();
+    final qtyCtrl = TextEditingController();
 
-  showDialog(
-    context: context,
-    builder: (_) => AlertDialog(
-      title: Text("Сколько добавить: ${m.name}?"),
-      content: TextField(
-        controller: qtyCtrl,
-        decoration: const InputDecoration(labelText: "Количество"),
-        keyboardType: TextInputType.number,
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text("Сколько добавить: ${m.name}?"),
+        content: TextField(
+          controller: qtyCtrl,
+          decoration: const InputDecoration(labelText: "Количество"),
+          keyboardType: TextInputType.number,
+        ),
+        actions: [
+          TextButton(
+            child: const Text("Отмена"),
+            onPressed: () {
+              Navigator.of(context).pop(); // закрыть только диалог
+            },
+          ),
+          ElevatedButton(
+            child: const Text("Добавить"),
+            onPressed: () {
+              final qty = double.tryParse(qtyCtrl.text) ?? 0;
+              if (qty > 0) {
+                widget.onAdd(m, qty);
+              }
+
+              // ОДИН раз закрываем весь стек модальных окон
+              Navigator.of(context, rootNavigator: true).pop();
+            },
+          ),
+        ],
       ),
-      actions: [
-        TextButton(
-          child: const Text("Отмена"),
-          onPressed: () {
-            Navigator.of(context).pop(); // закрыть только диалог
-          },
-        ),
-        ElevatedButton(
-          child: const Text("Добавить"),
-          onPressed: () {
-            final qty = double.tryParse(qtyCtrl.text) ?? 0;
-            if (qty > 0) {
-              widget.onAdd(m, qty);
-            }
-
-            // ОДИН раз закрываем весь стек модальных окон
-            Navigator.of(context, rootNavigator: true).pop();
-          },
-        ),
-      ],
-    ),
-  );
+    );
   }
-  }
+}

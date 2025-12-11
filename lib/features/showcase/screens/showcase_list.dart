@@ -85,23 +85,26 @@ class _ShowcaseCard extends StatelessWidget {
           onTap: () {
             final showcaseRepo = context.read<ShowcaseRepo>();
             final salesRepo = context.read<SalesRepo>();
+            final materialsRepo = context.read<MaterialsRepo>();
 
             final sale = Sale(
-  id: DateTime.now().millisecondsSinceEpoch.toString(),
-  product: item, // сохраняем копию всего букета
-  quantity: 1,
-  price: item.sellingPrice,
-  date: DateTime.now(),
-  ingredients: item.ingredients.map((ing) {
-    return SoldIngredient(
-      materialId: ing.materialId,
-      usedQuantity: ing.quantity,
-    );
-  }).toList(),
-);
+              id: DateTime.now().millisecondsSinceEpoch.toString(),
+              product: item, // сохраняем копию всего букета
+              quantity: 1,
+              price: item.sellingPrice,
+              date: DateTime.now(),
+              ingredients: item.ingredients.map((ing) {
+                final material = materialsRepo.getById(ing.materialId);
+                return SoldIngredient(
+                  materialId: ing.materialId,
+                  usedQuantity: ing.quantity,
+                  materialName: material?.name ?? ing.materialId,
+                );
+              }).toList(),
+            );
 
-salesRepo.addSale(sale);
-showcaseRepo.removeProduct(item.id);
+            salesRepo.addSale(sale);
+            showcaseRepo.removeProduct(item.id);
 
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text("Букет продан!")),

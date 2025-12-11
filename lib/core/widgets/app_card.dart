@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class AppCardAction {
@@ -30,6 +32,8 @@ class AppCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final image = _buildImage();
+
     return Card(
       elevation: 2,
       margin: EdgeInsets.zero,
@@ -53,18 +57,11 @@ class AppCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             /// Фото
-            if (photoUrl != null)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  photoUrl!,
-                  width: 70,
-                  height: 70,
-                  fit: BoxFit.cover,
-                ),
-              ),
-
-            if (photoUrl != null) const SizedBox(width: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: image,
+            ),
+            const SizedBox(width: 12),
 
             /// Текстовая часть
             Expanded(
@@ -123,5 +120,69 @@ class AppCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildImage() {
+    const size = Size(70, 70);
+
+    if (photoUrl == null || photoUrl!.trim().isEmpty) {
+      return _placeholder(size);
+    }
+
+    final value = photoUrl!.trim();
+    if (_isNetworkUrl(value)) {
+      return _sizedImage(
+        size,
+        Image.network(
+          value,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _placeholder(size),
+        ),
+      );
+    }
+
+    if (!kIsWeb) {
+      try {
+        final file = File(value);
+        if (file.existsSync()) {
+          return _sizedImage(
+            size,
+            Image.file(
+              file,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => _placeholder(size),
+            ),
+          );
+        }
+      } catch (_) {
+        return _placeholder(size);
+      }
+    }
+
+    return _placeholder(size);
+  }
+
+  Widget _sizedImage(Size size, Widget child) {
+    return SizedBox(
+      width: size.width,
+      height: size.height,
+      child: child,
+    );
+  }
+
+  Widget _placeholder(Size size) {
+    return _sizedImage(
+      size,
+      Container(
+        color: Colors.grey.shade200,
+        child: const Icon(Icons.image_not_supported, color: Colors.grey),
+      ),
+    );
+  }
+
+  bool _isNetworkUrl(String value) {
+    final uri = Uri.tryParse(value);
+    return uri != null && uri.hasAbsolutePath &&
+        (uri.scheme == 'http' || uri.scheme == 'https');
   }
 }

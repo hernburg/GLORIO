@@ -5,6 +5,7 @@ import '../data/models/assembled_product.dart';
 import '../data/models/ingredient.dart';
 import '../data/models/materialitem.dart';
 import '../data/models/supply.dart';
+import '../data/models/sold_ingredient.dart';
 
 class HiveInit {
   static Future<void> init() async {
@@ -15,5 +16,6 @@ class HiveInit {
     Hive.registerAdapter(AssembledProductAdapter());
     Hive.registerAdapter(MaterialItemAdapter());
     Hive.registerAdapter(SupplyAdapter());
+    Hive.registerAdapter(SoldIngredientAdapter());
   }
 }
