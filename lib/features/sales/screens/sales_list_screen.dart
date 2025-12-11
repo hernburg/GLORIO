@@ -229,9 +229,11 @@ class _SalesListScreenState extends State<SalesListScreen> {
       date: DateTime.now(),
 
       ingredients: p.ingredients.map<SoldIngredient>((ing) {
+        final material = materialsRepo.getById(ing.materialId);
         return SoldIngredient(
           materialId: ing.materialId,
           usedQuantity: ing.quantity,
+          materialName: material?.name ?? ing.materialId,
         );
       }).toList(),
     );

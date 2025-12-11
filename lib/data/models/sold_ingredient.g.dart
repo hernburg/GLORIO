@@ -19,17 +19,20 @@ class SoldIngredientAdapter extends TypeAdapter<SoldIngredient> {
     return SoldIngredient(
       materialId: fields[0] as String,
       usedQuantity: fields[1] as double,
+      materialName: (fields[2] as String?) ?? fields[0] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, SoldIngredient obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(3)
       ..writeByte(0)
       ..write(obj.materialId)
       ..writeByte(1)
-      ..write(obj.usedQuantity);
+      ..write(obj.usedQuantity)
+      ..writeByte(2)
+      ..write(obj.materialName);
   }
 
   @override
