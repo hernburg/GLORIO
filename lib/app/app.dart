@@ -7,7 +7,7 @@ class FlowerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final appRouter = context.watch<AppRouter>();
+    final appRouter = context.read<AppRouter>();
 
     return MaterialApp.router(
       routerConfig: appRouter.router,
