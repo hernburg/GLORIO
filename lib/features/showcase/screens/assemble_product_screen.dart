@@ -14,8 +14,9 @@ import '../../../data/repositories/supply_repo.dart';
 
 class AssembleProductScreen extends StatefulWidget {
   final AssembledProduct? editProduct;
+  final String? editId;
 
-  const AssembleProductScreen({super.key, this.editProduct});
+  const AssembleProductScreen({super.key, this.editProduct, this.editId});
 
   @override
   State<AssembleProductScreen> createState() => _AssembleProductScreenState();
@@ -35,13 +36,27 @@ class _AssembleProductScreenState extends State<AssembleProductScreen> {
   void initState() {
     super.initState();
 
-    if (widget.editProduct != null) {
-      final p = widget.editProduct!;
-      nameController.text = p.name;
-      priceController.text = p.sellingPrice.toString();
-      ingredients.addAll(p.ingredients);
-      photoUrl = p.photoUrl;
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.editProduct != null) {
+        _applyProduct(widget.editProduct!);
+      } else if (widget.editId != null) {
+        final repo = context.read<ShowcaseRepo>();
+        final product = repo.getById(widget.editId!);
+        if (product != null) {
+          _applyProduct(product);
+        }
+      }
+    });
+  }
+
+  void _applyProduct(AssembledProduct p) {
+    nameController.text = p.name;
+    priceController.text = p.sellingPrice.toString();
+    ingredients
+      ..clear()
+      ..addAll(List.from(p.ingredients));
+    photoUrl = p.photoUrl;
+    setState(() {});
   }
 
   /// Пикер фото
@@ -317,7 +332,6 @@ class _IngredientSelectorState extends State<IngredientSelector> {
               children: filtered.map((m) {
                 return ListTile(
                   title: Text(m.name),
-                  subtitle: Text("Остаток: ${m.quantity}"),
                   trailing:
                       const Icon(Icons.add_circle, color: Colors.blueAccent),
                   onTap: () => _enterQty(context, m),

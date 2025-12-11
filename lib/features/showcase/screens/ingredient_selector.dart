@@ -110,7 +110,6 @@ class _IngredientSelectorState extends State<IngredientSelector> {
 
                 return ListTile(
                   title: Text(m.name),
-                  subtitle: Text("Остаток: ${m.quantity}"),
                   trailing:
                       const Icon(Icons.add_circle, color: Colors.blue),
                   onTap: () async {

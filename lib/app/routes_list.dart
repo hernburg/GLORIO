@@ -13,10 +13,10 @@ import '../features/supplies/screens/supply_edit_screen.dart';
 // --- SHOWCASE / PRODUCTS ---
 import '../features/showcase/screens/showcase_list.dart';
 import '../features/showcase/screens/assemble_product_screen.dart';
-import '../data/models/assembled_product.dart';
 
 // --- SALES ---
 import '../features/sales/screens/sales_list_screen.dart';
+import '../features/sales/screens/sale_info_screen.dart';
 
 // --- CLIENTS ---
 import '../features/clients/screens/clients_list.dart';
@@ -87,10 +87,10 @@ final List<RouteBase> appRoutes = [
         builder: (_, __) => const AssembleProductScreen(),
       ),
       GoRoute(
-        path: '/assemble/edit/:id',
+        path: '/assemble_edit/:id',
         builder: (_, state) {
-          final product = state.extra as AssembledProduct;
-          return AssembleProductScreen(editProduct: product);
+          final id = state.pathParameters['id']!;
+          return AssembleProductScreen(editId: id);
         },
       ),
 
@@ -98,6 +98,13 @@ final List<RouteBase> appRoutes = [
       GoRoute(
         path: '/sales',
         builder: (_, __) => const SalesListScreen(),
+      ),
+      GoRoute(
+        path: '/sale_info/:id',
+        builder: (_, state) {
+          final id = state.pathParameters['id']!;
+          return SaleInfoScreen(saleId: id);
+        },
       ),
 
       /// CLIENTS

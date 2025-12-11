@@ -24,6 +24,15 @@ class Sale {
   @HiveField(5)
   final List<SoldIngredient> ingredients;
 
+  @HiveField(6)
+  final String? clientId;
+
+  @HiveField(7)
+  final String? clientName;
+
+  @HiveField(8)
+  final String soldBy;
+
   Sale({
     required this.id,
     required this.product,
@@ -31,6 +40,9 @@ class Sale {
     required this.price,
     required this.date,
     required this.ingredients,
+    required this.soldBy,
+    this.clientId,
+    this.clientName,
   });
 
   double get total => price * quantity;

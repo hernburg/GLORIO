@@ -182,7 +182,7 @@ class AppCard extends StatelessWidget {
 
   bool _isNetworkUrl(String value) {
     final uri = Uri.tryParse(value);
-    return uri != null && uri.hasAbsolutePath &&
+    return uri != null &&
         (uri.scheme == 'http' || uri.scheme == 'https');
   }
 }
