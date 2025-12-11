@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 // --- AUTH ---
 import '../features/auth/login_screen.dart';
+import '../features/welcome/welcome_screen.dart';
 
 // --- SUPPLIES ---
 import '../features/supplies/screens/supplies_list.dart';
@@ -42,6 +43,15 @@ final GlobalKey<NavigatorState> shellNavigatorKey = GlobalKey<NavigatorState>();
 
 /// СПИСОК МАРШРУТОВ
 final List<RouteBase> appRoutes = [
+
+  /// -------------------------
+  /// WELCOME — верхний уровень
+  /// -------------------------
+  GoRoute(
+    path: '/welcome',
+    parentNavigatorKey: rootNavigatorKey,
+    builder: (_, __) => const WelcomeScreen(),
+  ),
 
   /// -------------------------
   /// LOGIN — верхний уровень
