@@ -83,18 +83,18 @@ class _GlorioTabBarState extends State<GlorioTabBar>
         },
 
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(15, 15, 15, 36),
+          padding: const EdgeInsets.only(bottom: 0),
 
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(50),
 
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
 
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(30),
+                  borderRadius: BorderRadius.circular(10),
                   gradient: const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -138,7 +138,7 @@ class _GlorioTabBarState extends State<GlorioTabBar>
                                 final intro = Curves.easeOutBack.transform(_introController.value);
 
                                 final stretchK =
-                                    1 + 0.55 * math.sin(t * math.pi);
+                                    1 + 0.8 * math.sin(t * math.pi);
 
                                 final widthFactor = (1 / count) * stretchK;
 
@@ -154,7 +154,7 @@ class _GlorioTabBarState extends State<GlorioTabBar>
                                           sigmaY: 16,
                                         ),
                                         child: Container(
-                                          height: 100,
+                                          height: 120,
                                           decoration: BoxDecoration(
                                             gradient: LinearGradient(
                                               begin: Alignment.topLeft,

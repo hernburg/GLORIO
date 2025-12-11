@@ -25,10 +25,15 @@ class SuppliesListScreen extends StatelessWidget {
               ),
             )
           : ListView.builder(
-              padding: const EdgeInsets.all(30),
+              padding: const EdgeInsets.only(
+                top: 50,
+                left: 15,
+                right: 15,
+                bottom: 50,),
               itemCount: supplies.length,
-              shrinkWrap: true,
-              physics: const BouncingScrollPhysics(),
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(),
+              ),
               itemBuilder: (context, index) {
                 final s = supplies[index];
 
@@ -38,12 +43,12 @@ class SuppliesListScreen extends StatelessWidget {
                       "Закуплено: ${s.quantity}",
                       "В букетах: ${s.usedInBouquets}",
                       "Списано: ${s.writtenOff}",
-                      "Остаток: ${s.quantity - s.usedInBouquets - s.writtenOff}"
+                      "Остаток: ${s.quantity - s.usedInBouquets - s.writtenOff}",
                       "Дата поставки: ${_format(s.supplyDate)}",
                       "Себестоимость за ед.: ${s.purchasePrice.toStringAsFixed(0)} ₽",
                   ],
-                  quantity: s.quantity,
-                  photoUrl: null, // фото добавим позже
+                
+                  photoUrl: s.photoUrl,
 
                   actions: [
                     AppCardAction(

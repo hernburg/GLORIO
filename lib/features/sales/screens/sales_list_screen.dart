@@ -27,120 +27,12 @@ class _SalesListScreenState extends State<SalesListScreen> {
     return Scaffold(
       body: Column(
         children: [
-          const SizedBox(height: 12),
+          const SizedBox(height: 40),
 
-          // -------------------------------
-          //       LIQUID GLASS ТАБЫ
-          // -------------------------------
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(22),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.white.withOpacity(0.28),
-                        Colors.white.withOpacity(0.12),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(22),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.4),
-                      width: 1.2,
-                    ),
-                  ),
-                  child: Stack(
-                    children: [
-                      // Пузырь
-                      AnimatedAlign(
-                        duration: const Duration(milliseconds: 260),
-                        curve: Curves.easeOutCubic,
-                        alignment: tabIndex == 0
-                            ? Alignment.centerLeft
-                            : Alignment.centerRight,
-                        child: FractionallySizedBox(
-                          widthFactor: 0.5,
-                          child: Container(
-                            height: 36,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(16),
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.white.withOpacity(0.55),
-                                  Colors.white.withOpacity(0.20),
-                                ],
-                              ),
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.5),
-                                width: 1.0,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      Row(
-                        children: [
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () => setState(() => tabIndex = 0),
-                              child: SizedBox(
-                              height: 36,
-                              child: Center(
-                                child: Text(
-                                  "В продаже",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: tabIndex == 0
-                                        ? Colors.black
-                                        : Colors.grey.shade600,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            ),
-                          ),
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () => setState(() => tabIndex = 1),
-                              child: SizedBox(
-                              height: 36,
-                              child: Center(
-                                child: Text(
-                                  "Продано",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: tabIndex == 1
-                                        ? Colors.black
-                                        : Colors.grey.shade600,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
+          _buildTabs(),
 
           const SizedBox(height: 10),
 
-          // -------------------------------
-          //         КОНТЕНТ ВКЛАДОК
-          // -------------------------------
           Expanded(
             child: tabIndex == 0
                 ? _buildAvailable(showcase)
@@ -152,7 +44,103 @@ class _SalesListScreenState extends State<SalesListScreen> {
   }
 
   // -------------------------------
-  //     ВКЛАДКА "В ПРОДАЖЕ"
+  // LIQUID GLASS ТАБЫ
+  // -------------------------------
+  Widget _buildTabs() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(22),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.white.withOpacity(0.28),
+                  Colors.white.withOpacity(0.12),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.4),
+                width: 1.2,
+              ),
+            ),
+            child: Stack(
+              children: [
+                AnimatedAlign(
+                  duration: const Duration(milliseconds: 260),
+                  curve: Curves.easeOutCubic,
+                  alignment: tabIndex == 0
+                      ? Alignment.centerLeft
+                      : Alignment.centerRight,
+                  child: FractionallySizedBox(
+                    widthFactor: 0.5,
+                    child: Container(
+                      height: 36,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.white.withOpacity(0.55),
+                            Colors.white.withOpacity(0.20),
+                          ],
+                        ),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.5),
+                          width: 1.0,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => setState(() => tabIndex = 0),
+                        child: _tabLabel("В продаже", tabIndex == 0),
+                      ),
+                    ),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => setState(() => tabIndex = 1),
+                        child: _tabLabel("Продано", tabIndex == 1),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _tabLabel(String text, bool active) {
+    return SizedBox(
+      height: 36,
+      child: Center(
+        child: Text(
+          text,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: active ? Colors.black : Colors.grey.shade600,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // -------------------------------
+  // В ПРОДАЖЕ
   // -------------------------------
   Widget _buildAvailable(List products) {
     if (products.isEmpty) {
@@ -191,7 +179,7 @@ class _SalesListScreenState extends State<SalesListScreen> {
   }
 
   // -------------------------------
-  //       ВКЛАДКА "ПРОДАНО"
+  // ПРОДАНО
   // -------------------------------
   Widget _buildSold(List<Sale> sales) {
     if (sales.isEmpty) {
@@ -217,9 +205,7 @@ class _SalesListScreenState extends State<SalesListScreen> {
             AppCardAction(
               icon: Icons.info_outline,
               color: Colors.blue,
-              onTap: () {
-                // TODO: детали продажи
-              },
+              onTap: () {},
             ),
           ],
         );
@@ -228,9 +214,9 @@ class _SalesListScreenState extends State<SalesListScreen> {
   }
 
   // -------------------------------
-  //         ЛОГИКА ПРОДАЖ
+  // ПРОДАЖА
   // -------------------------------
-void _sell(product) {
+void _sell(p) {
   final salesRepo = context.read<SalesRepo>();
   final showcaseRepo = context.read<ShowcaseRepo>();
   final materialsRepo = context.read<MaterialsRepo>();
@@ -238,11 +224,12 @@ void _sell(product) {
 
   final sale = Sale(
     id: DateTime.now().millisecondsSinceEpoch.toString(),
-    product: product,
+    product: p,
     quantity: 1,
-    price: product.sellingPrice,
+    price: p.sellingPrice,
     date: DateTime.now(),
-    ingredients: product.ingredients.map((ing) {
+
+    ingredients: p.ingredients.map<SoldIngredient>((ing) {
       return SoldIngredient(
         materialId: ing.materialId,
         usedQuantity: ing.quantity,
@@ -251,27 +238,36 @@ void _sell(product) {
   );
 
   salesRepo.addSale(sale);
-  showcaseRepo.removeProduct(product);
+  showcaseRepo.removeProduct(p.id);
 
-  // списываем материалы
-  for (final ing in product.ingredients) {
+  for (final ing in p.ingredients) {
     materialsRepo.returnQuantity(ing.materialId, ing.quantity);
     suppliesRepo.returnFromBouquet(ing.materialId, ing.quantity);
   }
 
+  ScaffoldMessenger.of(context)
+      .showSnackBar(const SnackBar(content: Text("Товар продан")));
+
   setState(() => tabIndex = 1);
 }
 
-  void _dismantle(product) {
+  // -------------------------------
+  // РАЗБОР БУКЕТА
+  // -------------------------------
+  void _dismantle(p) {
     final showcaseRepo = context.read<ShowcaseRepo>();
-    final materials = context.read<MaterialsRepo>();
-    final supplies = context.read<SupplyRepository>();
+    final materialsRepo = context.read<MaterialsRepo>();
+    final suppliesRepo = context.read<SupplyRepository>();
 
-    for (final ing in product.ingredients) {
-      materials.returnQuantity(ing.materialId, ing.quantity);
-      supplies.returnFromBouquet(ing.materialId, ing.quantity);
+    for (final ing in p.ingredients) {
+      materialsRepo.returnQuantity(ing.materialId, ing.quantity);
+      suppliesRepo.returnFromBouquet(ing.materialId, ing.quantity);
     }
 
-    showcaseRepo.removeProduct(product);
+    showcaseRepo.removeProduct(p.id);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Товар удалён")),
+    );
   }
 }

@@ -10,7 +10,7 @@ import '../../data/repositories/loyalty_repo.dart';
 class AppProviders {
   static List<SingleChildWidget> providers = [
     ChangeNotifierProvider(create: (_) => SupplyRepository()),
-    ChangeNotifierProvider(create: (_) => ClientsRepository()),
+    ChangeNotifierProvider(create: (_) => ClientsRepo()),
     ChangeNotifierProvider(create: (_) => LoyaltyRepository()),
     ChangeNotifierProvider(create: (_) => ShowcaseRepo()),
     ChangeNotifierProvider(create: (_) => MaterialsRepo()),

@@ -9,6 +9,7 @@ import '../../../data/models/assembled_product.dart';
 import '../../../data/models/sale.dart';
 import '../../../data/repositories/showcase_repo.dart';
 import '../../../data/repositories/sales_repo.dart';
+import '../../../data/repositories/materials_repo.dart';
 
 class ShowcaseListScreen extends StatelessWidget {
   const ShowcaseListScreen({super.key});
@@ -19,7 +20,6 @@ class ShowcaseListScreen extends StatelessWidget {
     final items = showcase.products;
 
     return Scaffold(
-
       floatingActionButton: AddButton(
         onTap: () => context.push('/assemble'),
       ),
@@ -33,7 +33,12 @@ class ShowcaseListScreen extends StatelessWidget {
               ),
             )
           : ListView.builder(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.only(
+                top: 50,
+                left: 15,
+                right: 15,
+                bottom: 50,
+              ),
               itemCount: items.length,
               itemBuilder: (context, index) =>
                   _ShowcaseCard(item: items[index]),
@@ -47,47 +52,63 @@ class _ShowcaseCard extends StatelessWidget {
 
   const _ShowcaseCard({required this.item});
 
+  bool _hasMissingIngredients(BuildContext context) {
+    final materials = context.read<MaterialsRepo>().materials;
+
+    for (final ing in item.ingredients) {
+      final exists = materials.any((m) => m.id == ing.materialId);
+      if (!exists) return true;
+    }
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isBroken = _hasMissingIngredients(context);
+
     return AppCard(
       title: item.name,
       subtitles: [
         'Себестоимость: ${item.costPrice.toStringAsFixed(0)} ₽',
         'Цена продажи: ${item.sellingPrice.toStringAsFixed(0)} ₽',
+        if (isBroken)
+          'Требует корректировки состава'
       ],
       photoUrl: item.photoUrl,
 
       actions: [
-        /// 🟢 ПРОДАЖА БУКЕТА
+        /// ПРОДАЖА
         AppCardAction(
-  icon: Icons.shopping_cart_checkout,
-  color: Colors.green,
-  onTap: () {
-    final showcaseRepo = context.read<ShowcaseRepo>();
-    final salesRepo = context.read<SalesRepo>();
+          icon: Icons.shopping_cart_checkout,
+          color: Colors.green,
+          onTap: () {
+            final showcaseRepo = context.read<ShowcaseRepo>();
+            final salesRepo = context.read<SalesRepo>();
 
-    final sale = Sale(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      product: item,
-      quantity: 1,
-      price: item.sellingPrice,
-      date: DateTime.now(),
-      ingredients: item.ingredients.map((ing) {
-        return SoldIngredient(materialId: ing.materialId, usedQuantity: ing.quantity);
-      }).toList(),
-    );
+            final sale = Sale(
+              id: DateTime.now().millisecondsSinceEpoch.toString(),
+              product: item,
+              quantity: 1,
+              price: item.sellingPrice,
+              date: DateTime.now(),
+              ingredients: item.ingredients.map((ing) {
+                return SoldIngredient(
+                  materialId: ing.materialId,
+                  usedQuantity: ing.quantity,
+                );
+              }).toList(),
+            );
 
-    salesRepo.addSale(sale);
-    showcaseRepo.removeProduct(item.id);
+            salesRepo.addSale(sale);
+            showcaseRepo.removeProduct(item.id);
 
-    // Чтобы сразу было видно, что он исчез
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Букет продан!")),
-    );
-  },
-),
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Букет продан!")),
+            );
+          },
+        ),
 
-        /// ⚙️ РЕДАКТИРОВАНИЕ БУКЕТА
+        /// РЕДАКТИРОВАНИЕ
         AppCardAction(
           icon: Icons.settings,
           color: const Color.fromARGB(74, 94, 94, 94),
@@ -100,7 +121,7 @@ class _ShowcaseCard extends StatelessWidget {
           },
         ),
 
-        /// ❌ УДАЛЕНИЕ С ВИТРИНЫ
+        /// УДАЛЕНИЕ
         AppCardAction(
           icon: Icons.delete,
           color: Colors.red,

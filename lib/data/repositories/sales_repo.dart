@@ -1,30 +1,40 @@
 import 'package:flutter/foundation.dart';
+import 'package:hive/hive.dart';
 import '../models/sale.dart';
 
 class SalesRepo extends ChangeNotifier {
-  final List<Sale> _sales = [];
+  static const boxName = 'salesBox';
 
-  List<Sale> get sales => List.unmodifiable(_sales);
+  late Box<Sale> _box;
+
+  Future<void> init() async {
+    _box = await Hive.openBox<Sale>(boxName);
+    notifyListeners();
+  }
+
+  List<Sale> get sales {
+    final list = _box.values.toList();
+    list.sort((a, b) => b.date.compareTo(a.date));
+    return list;
+  }
 
   void addSale(Sale sale) {
-    _sales.add(sale);
+    _box.put(sale.id, sale);
     notifyListeners();
   }
 
   void updateSale(Sale sale) {
-    final index = _sales.indexWhere((s) => s.id == sale.id);
-    if (index == -1) return;
-    _sales[index] = sale;
+    _box.put(sale.id, sale);
     notifyListeners();
   }
 
   void deleteSale(String saleId) {
-    _sales.removeWhere((s) => s.id == saleId);
+    _box.delete(saleId);
     notifyListeners();
   }
 
   double getTotalForDate(DateTime date) {
-    return _sales
+    return _box.values
         .where((s) =>
             s.date.year == date.year &&
             s.date.month == date.month &&

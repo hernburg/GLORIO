@@ -1,33 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import '../models/assembled_product.dart';
-import 'materials_repo.dart';
-import 'supply_repo.dart';
 
 class ShowcaseRepo extends ChangeNotifier {
-  final List<AssembledProduct> _products = [];
+  static const boxName = 'showcaseBox';
 
-  List<AssembledProduct> get products => List.unmodifiable(_products);
+  late Box<AssembledProduct> _box;
 
-  void addProduct(
-    AssembledProduct product,
-    MaterialsRepo materials,
-    SupplyRepository supplies,
-  ) {
-    // Списание уже сделано на экране — здесь НИЧЕГО не списываем
-    _products.add(product);
+  List<AssembledProduct> get products => _box.values.toList();
+
+  Future<void> init() async {
+    _box = await Hive.openBox<AssembledProduct>(boxName);
+    notifyListeners();
+  }
+
+  void addProduct(AssembledProduct p) {
+    _box.put(p.id, p);
     notifyListeners();
   }
 
   void updateProduct(AssembledProduct updated) {
-    final index = _products.indexWhere((p) => p.id == updated.id);
-    if (index == -1) return;
-
-    _products[index] = updated;
+    _box.put(updated.id, updated);
     notifyListeners();
   }
 
   void removeProduct(String id) {
-    _products.removeWhere((p) => p.id == id);
+    _box.delete(id);
     notifyListeners();
   }
 }

@@ -1,3 +1,4 @@
+import 'package:flower_accounting_app/features/clients/screens/client_edit_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -19,6 +20,7 @@ import '../features/sales/screens/sales_list_screen.dart';
 
 // --- CLIENTS ---
 import '../features/clients/screens/clients_list.dart';
+import '../data/models/client.dart';
 
 // --- WRITE-OFF ---
 import '../features/writeoff/screens/writeoff_list.dart';
@@ -103,6 +105,16 @@ final List<RouteBase> appRoutes = [
         path: '/clients',
         builder: (_, __) => const ClientsListScreen(),
       ),
+
+      GoRoute(
+        path: '/clients/edit',
+        builder: (context, state) {
+          final client = state.extra as Client?;
+          return ClientEditScreen(client: client);
+        },
+      ),
+    
+
 
       /// WRITE-OFF
       GoRoute(
