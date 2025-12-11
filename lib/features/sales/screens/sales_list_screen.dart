@@ -1,14 +1,18 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/widgets/app_card.dart';
+import '../../../data/models/assembled_product.dart';
 import '../../../data/repositories/showcase_repo.dart';
 import '../../../data/repositories/sales_repo.dart';
 import '../../../data/models/sale.dart';
 import '../../../data/repositories/materials_repo.dart';
 import '../../../data/repositories/supply_repo.dart';
 import '../../../data/models/sold_ingredient.dart';
+import '../../../data/repositories/auth_repo.dart';
+import '../widgets/client_selector.dart';
 
 class SalesListScreen extends StatefulWidget {
   const SalesListScreen({super.key});
@@ -141,7 +145,7 @@ class _SalesListScreenState extends State<SalesListScreen> {
   // -------------------------------------------------------
   // В ПРОДАЖЕ
   // -------------------------------------------------------
-  Widget _buildAvailable(List products) {
+  Widget _buildAvailable(List<AssembledProduct> products) {
     if (products.isEmpty) {
       return const Center(child: Text("На витрине пока пусто"));
     }
@@ -204,7 +208,7 @@ class _SalesListScreenState extends State<SalesListScreen> {
             AppCardAction(
               icon: Icons.info_outline,
               color: Colors.blue,
-              onTap: () {},
+              onTap: () => context.push('/sale_info/${s.id}'),
             ),
           ],
         );
@@ -215,28 +219,14 @@ class _SalesListScreenState extends State<SalesListScreen> {
   // -------------------------------------------------------
   // ПРОДАЖА
   // -------------------------------------------------------
-  void _sell(p) {
+  Future<void> _sell(AssembledProduct p) async {
+    final sale = await _createSale(context, p);
+    if (sale == null) return;
+
     final salesRepo = context.read<SalesRepo>();
     final showcaseRepo = context.read<ShowcaseRepo>();
     final materialsRepo = context.read<MaterialsRepo>();
     final suppliesRepo = context.read<SupplyRepository>();
-
-    final sale = Sale(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      product: p,
-      quantity: 1,
-      price: p.sellingPrice,
-      date: DateTime.now(),
-
-      ingredients: p.ingredients.map<SoldIngredient>((ing) {
-        final material = materialsRepo.getById(ing.materialId);
-        return SoldIngredient(
-          materialId: ing.materialId,
-          usedQuantity: ing.quantity,
-          materialName: material?.name ?? ing.materialId,
-        );
-      }).toList(),
-    );
 
     salesRepo.addSale(sale);
     showcaseRepo.removeProduct(p.id);
@@ -250,6 +240,35 @@ class _SalesListScreenState extends State<SalesListScreen> {
         .showSnackBar(const SnackBar(content: Text("Товар продан")));
 
     setState(() => tabIndex = 1);
+  }
+
+  Future<Sale?> _createSale(BuildContext context, AssembledProduct p) async {
+    final selection = await pickClient(context);
+    if (selection == null) return null;
+
+    final client = selection.withoutClient ? null : selection.client;
+    final materialsRepo = context.read<MaterialsRepo>();
+    final authRepo = context.read<AuthRepo>();
+
+    return Sale(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      product: p,
+      quantity: 1,
+      price: p.sellingPrice,
+      date: DateTime.now(),
+      clientId: client?.id,
+      clientName: client?.name,
+      soldBy: authRepo.currentUserLogin,
+      ingredients: p.ingredients.map<SoldIngredient>((ing) {
+        final material = materialsRepo.getById(ing.materialId);
+        final materialName = material?.name ?? ing.materialId;
+        return SoldIngredient(
+          materialId: ing.materialId,
+          usedQuantity: ing.quantity,
+          materialName: materialName,
+        );
+      }).toList(),
+    );
   }
 
   // -------------------------------------------------------

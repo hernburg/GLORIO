@@ -9,6 +9,8 @@ class ShowcaseRepo extends ChangeNotifier {
 
   List<AssembledProduct> get products => _box.values.toList();
 
+  AssembledProduct? getById(String id) => _box.get(id);
+
   Future<void> init() async {
     _box = await Hive.openBox<AssembledProduct>(boxName);
     notifyListeners();

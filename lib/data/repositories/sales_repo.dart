@@ -9,6 +9,8 @@ class SalesRepo extends ChangeNotifier {
 
   List<Sale> get sales => _box.values.toList();
 
+  Sale? getSaleById(String id) => _box.get(id);
+
   Future<void> init() async {
     _box = await Hive.openBox<Sale>(boxName);
     notifyListeners();

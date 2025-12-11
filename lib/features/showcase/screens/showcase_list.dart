@@ -11,6 +11,8 @@ import '../../../data/repositories/showcase_repo.dart';
 import '../../../data/repositories/sales_repo.dart';
 import '../../../data/repositories/materials_repo.dart';
 import '../../../data/models/sold_ingredient.dart';
+import '../../sales/widgets/client_selector.dart';
+import '../../../data/repositories/auth_repo.dart';
 
 class ShowcaseListScreen extends StatelessWidget {
   const ShowcaseListScreen({super.key});
@@ -82,10 +84,16 @@ class _ShowcaseCard extends StatelessWidget {
         AppCardAction(
           icon: Icons.shopping_cart_checkout,
           color: Colors.green,
-          onTap: () {
+          onTap: () async {
             final showcaseRepo = context.read<ShowcaseRepo>();
             final salesRepo = context.read<SalesRepo>();
             final materialsRepo = context.read<MaterialsRepo>();
+            final authRepo = context.read<AuthRepo>();
+
+            final selection = await pickClient(context);
+            if (selection == null) return;
+
+            final client = selection.withoutClient ? null : selection.client;
 
             final sale = Sale(
               id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -93,6 +101,9 @@ class _ShowcaseCard extends StatelessWidget {
               quantity: 1,
               price: item.sellingPrice,
               date: DateTime.now(),
+              clientId: client?.id,
+              clientName: client?.name,
+              soldBy: authRepo.currentUserLogin,
               ingredients: item.ingredients.map((ing) {
                 final material = materialsRepo.getById(ing.materialId);
                 return SoldIngredient(
@@ -117,11 +128,7 @@ class _ShowcaseCard extends StatelessWidget {
           icon: Icons.settings,
           color: const Color.fromARGB(74, 94, 94, 94),
           onTap: () {
-            context.pushNamed(
-              'assemble_edit',
-              pathParameters: {'id': item.id},
-              extra: item,
-            );
+            context.push('/assemble_edit/${item.id}');
           },
         ),
 
