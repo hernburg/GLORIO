@@ -115,9 +115,8 @@ class _IngredientSelectorState extends State<IngredientSelector> {
                       const Icon(Icons.add_circle, color: Colors.blue),
                   onTap: () async {
                     final qty = await _enterQty(m);
-                    if (qty == null || qty <= 0) return;
-
                     if (!mounted) return;
+                    if (qty == null || qty <= 0) return;
 
                     final ingredient = Ingredient(
                       materialId: m.id,

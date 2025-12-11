@@ -20,7 +20,7 @@ class ClientsListScreen extends StatelessWidget {
           final c = repo.clients[i];
 
           return ListTile(
-            tileColor: Colors.white.withOpacity(0.1),
+            tileColor: Colors.white.withValues(alpha: 0.1),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),

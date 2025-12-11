@@ -57,15 +57,15 @@ class _SalesListScreenState extends State<SalesListScreen> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Colors.white.withOpacity(0.28),
-                  Colors.white.withOpacity(0.12),
+                  Colors.white.withValues(alpha: 0.28),
+                  Colors.white.withValues(alpha: 0.12),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(22),
               border: Border.all(
-                color: Colors.white.withOpacity(0.4),
+                color: Colors.white.withValues(alpha: 0.4),
                 width: 1.2,
               ),
             ),
@@ -85,12 +85,12 @@ class _SalesListScreenState extends State<SalesListScreen> {
                         borderRadius: BorderRadius.circular(16),
                         gradient: LinearGradient(
                           colors: [
-                            Colors.white.withOpacity(0.55),
-                            Colors.white.withOpacity(0.20),
+                            Colors.white.withValues(alpha: 0.55),
+                            Colors.white.withValues(alpha: 0.20),
                           ],
                         ),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.5),
+                          color: Colors.white.withValues(alpha: 0.5),
                           width: 1.0,
                         ),
                       ),

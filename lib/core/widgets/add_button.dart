@@ -19,22 +19,22 @@ class AddButton extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Colors.white.withOpacity(0.35),
-              const Color.fromARGB(255, 255, 166, 0).withOpacity(0.50),
+              Colors.white.withValues(alpha: 0.35),
+              const Color.fromARGB(255, 255, 166, 0).withValues(alpha: 0.50),
             ],
           ),
           border: Border.all(
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
             width: 1.4,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.lightBlueAccent.withOpacity(0.4),
+              color: Colors.lightBlueAccent.withValues(alpha: 0.4),
               blurRadius: 14,
               offset: const Offset(0, 6),
             ),
             BoxShadow(
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
               blurRadius: 10,
               offset: const Offset(-2, -2),
             ),

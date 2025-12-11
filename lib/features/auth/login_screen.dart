@@ -16,7 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
   String? errorText;
 
   void fakeLogin() {
-    print("FAKE LOGIN CALLED");
+    debugPrint("FAKE LOGIN CALLED");
     final phone = phoneController.text.trim();
     final pass = passwordController.text.trim();
 
@@ -52,7 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
           /// Лёгкое матовое затемнение, чтобы логотип читался
           Positioned.fill(
             child: Container(
-              color: Colors.white.withOpacity(0.4),
+              color: Colors.white.withValues(alpha: 0.4),
             ),
           ),
 
