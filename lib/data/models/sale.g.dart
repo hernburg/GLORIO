@@ -17,15 +17,24 @@ class SaleAdapter extends TypeAdapter<Sale> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return Sale(
-      id: fields[0] as String,
-      product: fields[1] as AssembledProduct,
-      quantity: fields[2] as int,
-      price: fields[3] as double,
-      date: fields[4] as DateTime,
-      ingredients: (fields[5] as List).cast<SoldIngredient>(),
+      id: fields[0] as String? ?? '',
+      product: fields[1] as AssembledProduct? ??
+          AssembledProduct(
+            name: '',
+            photoUrl: null,
+            ingredients: const <Ingredient>[],
+            costPrice: 0,
+            sellingPrice: 0,
+          ),
+      quantity: (fields[2] as int?) ?? 0,
+      price: (fields[3] as double?) ?? 0,
+      date:
+          (fields[4] as DateTime?) ?? DateTime.fromMillisecondsSinceEpoch(0),
+      ingredients:
+          (fields[5] as List?)?.cast<SoldIngredient>() ?? <SoldIngredient>[],
       clientId: fields[6] as String?,
       clientName: fields[7] as String?,
-      soldBy: fields[8] as String,
+      soldBy: (fields[8] as String?) ?? '',
     );
   }
 

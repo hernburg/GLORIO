@@ -11,11 +11,11 @@ class SoldIngredient {
   final double usedQuantity;
 
   @HiveField(2)
-  final String materialName;
+  final String? materialName;
 
   SoldIngredient({
     required this.materialId,
     required this.usedQuantity,
-    required this.materialName,
+    this.materialName,
   });
 }

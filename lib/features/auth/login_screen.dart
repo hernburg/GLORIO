@@ -33,7 +33,7 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     /// После логина → перейти в приложение с нижним меню
-    context.read<AuthRepo>().login(login: phone);
+    context.read<AuthRepo>().login(context: context, login: phone);
   }
 
   @override

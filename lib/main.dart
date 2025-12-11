@@ -38,12 +38,16 @@ void main() async {
   Hive.registerAdapter(SoldIngredientAdapter());
 
   // ------ СОЗДАЕМ ЕДИНСТВЕННЫЕ ИНСТАНСЫ ------
+  final authRepo = AuthRepo();
   final materialsRepo = MaterialsRepo();
   final showcaseRepo = ShowcaseRepo();
   final supplyRepo = SupplyRepository();
   final clientsRepo = ClientsRepo();
   final salesRepo = SalesRepo();
   final writeoffRepo = WriteoffRepository();
+
+  // ------ РОУТЕР ------
+  final appRouter = AppRouter(authRepo);
 
   // ------ ИНИЦИАЛИЗАЦИЯ ------
   await materialsRepo.init();
@@ -57,10 +61,8 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthRepo()),
-        Provider(
-          create: (context) => AppRouter(context.read<AuthRepo>()),
-        ),
+        ChangeNotifierProvider.value(value: authRepo),
+        Provider.value(value: appRouter),
 
         ChangeNotifierProvider.value(value: materialsRepo),
         ChangeNotifierProvider.value(value: showcaseRepo),

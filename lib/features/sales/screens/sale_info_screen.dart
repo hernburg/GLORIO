@@ -27,29 +27,19 @@ class SaleInfoScreen extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           children: [
             Text(
+              sale.product.name,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 8),
+            Text('Цена за единицу: ${sale.price.toStringAsFixed(0)} ₽'),
+            Text('Количество: ${sale.quantity}'),
+            Text('Итого: ${sale.total.toStringAsFixed(0)} ₽'),
+            const SizedBox(height: 8),
+            Text(
               'Дата: ${sale.date.day}.${sale.date.month}.${sale.date.year}',
-              style: const TextStyle(fontSize: 16),
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Цена: ${sale.price.toStringAsFixed(0)} ₽',
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Товар: ${sale.product.name}',
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Клиент: ${sale.clientName ?? 'Без клиента'}',
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Продавец: ${sale.soldBy}',
-              style: const TextStyle(fontSize: 16),
-            ),
+            Text('Клиент: ${sale.clientName ?? 'Без клиента'}'),
+            Text('Продавец: ${sale.soldBy.isEmpty ? '—' : sale.soldBy}'),
             const SizedBox(height: 16),
             const Text(
               'Ингредиенты',
@@ -59,7 +49,7 @@ class SaleInfoScreen extends StatelessWidget {
             ...sale.ingredients.map(
               (ing) => ListTile(
                 contentPadding: EdgeInsets.zero,
-                title: Text(ing.materialName),
+                title: Text(ing.materialName ?? ing.materialId),
                 subtitle: Text('Количество: ${ing.usedQuantity}'),
               ),
             ),
