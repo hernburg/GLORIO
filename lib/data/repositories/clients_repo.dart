@@ -1,21 +1,31 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import '../models/client.dart';
 
-class ClientsRepository extends ChangeNotifier {
-  final List<Client> _clients = [];
+class ClientsRepo extends ChangeNotifier {
+  static const boxName = 'clientsBox';
 
-  List<Client> get clients => List.unmodifiable(_clients);
+  late Box<Client> _box;
 
-  void addClient(Client client) {
-    _clients.add(client);
+  List<Client> get clients => _box.values.toList();
+
+  Future<void> init() async {
+    _box = await Hive.openBox<Client>(boxName);
     notifyListeners();
   }
 
-  Client? getByPhone(String phone) {
-    try {
-      return _clients.firstWhere((c) => c.phone == phone);
-    } catch (_) {
-      return null;
-    }
+  void addClient(Client c) {
+    _box.put(c.id, c);
+    notifyListeners();
+  }
+
+  void updateClient(Client c) {
+    _box.put(c.id, c);
+    notifyListeners();
+  }
+
+  void removeClient(String id) {
+    _box.delete(id);
+    notifyListeners();
   }
 }

@@ -1,13 +1,18 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/widgets/app_card.dart';
+import '../../../data/models/assembled_product.dart';
 import '../../../data/repositories/showcase_repo.dart';
 import '../../../data/repositories/sales_repo.dart';
 import '../../../data/models/sale.dart';
 import '../../../data/repositories/materials_repo.dart';
 import '../../../data/repositories/supply_repo.dart';
+import '../../../data/models/sold_ingredient.dart';
+import '../../../data/repositories/auth_repo.dart';
+import '../widgets/client_selector.dart';
 
 class SalesListScreen extends StatefulWidget {
   const SalesListScreen({super.key});
@@ -25,126 +30,12 @@ class _SalesListScreenState extends State<SalesListScreen> {
     final sales = context.watch<SalesRepo>().sales;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Продажи"),
-        centerTitle: true,
-      ),
       body: Column(
         children: [
-          const SizedBox(height: 12),
-
-          // -------------------------------
-          //       LIQUID GLASS ТАБЫ
-          // -------------------------------
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(22),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.white.withOpacity(0.28),
-                        Colors.white.withOpacity(0.12),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(22),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.4),
-                      width: 1.2,
-                    ),
-                  ),
-                  child: Stack(
-                    children: [
-                      // Пузырь
-                      AnimatedAlign(
-                        duration: const Duration(milliseconds: 260),
-                        curve: Curves.easeOutCubic,
-                        alignment: tabIndex == 0
-                            ? Alignment.centerLeft
-                            : Alignment.centerRight,
-                        child: FractionallySizedBox(
-                          widthFactor: 0.5,
-                          child: Container(
-                            height: 36,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(16),
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.white.withOpacity(0.55),
-                                  Colors.white.withOpacity(0.20),
-                                ],
-                              ),
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.5),
-                                width: 1.0,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      Row(
-                        children: [
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () => setState(() => tabIndex = 0),
-                              child: SizedBox(
-                              height: 36,
-                              child: Center(
-                                child: Text(
-                                  "В продаже",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: tabIndex == 0
-                                        ? Colors.black
-                                        : Colors.grey.shade600,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            ),
-                          ),
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () => setState(() => tabIndex = 1),
-                              child: SizedBox(
-                              height: 36,
-                              child: Center(
-                                child: Text(
-                                  "Продано",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: tabIndex == 1
-                                        ? Colors.black
-                                        : Colors.grey.shade600,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-
+          const SizedBox(height: 40),
+          _buildTabs(),
           const SizedBox(height: 10),
 
-          // -------------------------------
-          //         КОНТЕНТ ВКЛАДОК
-          // -------------------------------
           Expanded(
             child: tabIndex == 0
                 ? _buildAvailable(showcase)
@@ -155,10 +46,106 @@ class _SalesListScreenState extends State<SalesListScreen> {
     );
   }
 
-  // -------------------------------
-  //     ВКЛАДКА "В ПРОДАЖЕ"
-  // -------------------------------
-  Widget _buildAvailable(List products) {
+  // -------------------------------------------------------
+  // LIQUID GLASS ТАБЫ
+  // -------------------------------------------------------
+  Widget _buildTabs() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(22),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.white.withValues(alpha: 0.28),
+                  Colors.white.withValues(alpha: 0.12),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.4),
+                width: 1.2,
+              ),
+            ),
+            child: Stack(
+              children: [
+                AnimatedAlign(
+                  duration: const Duration(milliseconds: 260),
+                  curve: Curves.easeOutCubic,
+                  alignment: tabIndex == 0
+                      ? Alignment.centerLeft
+                      : Alignment.centerRight,
+                  child: FractionallySizedBox(
+                    widthFactor: 0.5,
+                    child: Container(
+                      height: 36,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.white.withValues(alpha: 0.55),
+                            Colors.white.withValues(alpha: 0.20),
+                          ],
+                        ),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.5),
+                          width: 1.0,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => setState(() => tabIndex = 0),
+                        child: _tabLabel("В продаже", tabIndex == 0),
+                      ),
+                    ),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => setState(() => tabIndex = 1),
+                        child: _tabLabel("Продано", tabIndex == 1),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _tabLabel(String text, bool active) {
+    return SizedBox(
+      height: 36,
+      child: Center(
+        child: Text(
+          text,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: active ? Colors.black : Colors.grey.shade600,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // -------------------------------------------------------
+  // В ПРОДАЖЕ
+  // -------------------------------------------------------
+  Widget _buildAvailable(List<AssembledProduct> products) {
     if (products.isEmpty) {
       return const Center(child: Text("На витрине пока пусто"));
     }
@@ -174,8 +161,8 @@ class _SalesListScreenState extends State<SalesListScreen> {
           title: p.name,
           photoUrl: p.photoUrl,
           subtitles: [
-            "Себестоимость: ${p.costPrice} ₽",
-            "Цена продажи: ${p.sellingPrice} ₽",
+            "Себестоимость: ${p.costPrice}",
+            "Цена продажи: ${p.sellingPrice}",
           ],
           actions: [
             AppCardAction(
@@ -194,9 +181,9 @@ class _SalesListScreenState extends State<SalesListScreen> {
     );
   }
 
-  // -------------------------------
-  //       ВКЛАДКА "ПРОДАНО"
-  // -------------------------------
+  // -------------------------------------------------------
+  // ПРОДАНО
+  // -------------------------------------------------------
   Widget _buildSold(List<Sale> sales) {
     if (sales.isEmpty) {
       return const Center(child: Text("Пока нет завершённых продаж"));
@@ -221,9 +208,7 @@ class _SalesListScreenState extends State<SalesListScreen> {
             AppCardAction(
               icon: Icons.info_outline,
               color: Colors.blue,
-              onTap: () {
-                // TODO: детали продажи
-              },
+              onTap: () => context.push('/sale_info/${s.id}'),
             ),
           ],
         );
@@ -231,37 +216,78 @@ class _SalesListScreenState extends State<SalesListScreen> {
     );
   }
 
-  // -------------------------------
-  //         ЛОГИКА ПРОДАЖ
-  // -------------------------------
-  void _sell(product) {
+  // -------------------------------------------------------
+  // ПРОДАЖА
+  // -------------------------------------------------------
+  Future<void> _sell(AssembledProduct p) async {
+    final sale = await _createSale(context, p);
+    if (sale == null) return;
+
     final salesRepo = context.read<SalesRepo>();
     final showcaseRepo = context.read<ShowcaseRepo>();
-
-    final sale = Sale(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      product: product,
-      quantity: 1,
-      price: product.sellingPrice,
-      date: DateTime.now(),
-    );
+    final materialsRepo = context.read<MaterialsRepo>();
+    final suppliesRepo = context.read<SupplyRepository>();
 
     salesRepo.addSale(sale);
-    showcaseRepo.removeProduct(product);
+    showcaseRepo.removeProduct(p.id);
+
+    for (final ing in p.ingredients) {
+      materialsRepo.returnQuantity(ing.materialId, ing.quantity);
+      suppliesRepo.returnFromBouquet(ing.materialId, ing.quantity);
+    }
+
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text("Товар продан")));
 
     setState(() => tabIndex = 1);
   }
 
-  void _dismantle(product) {
-    final showcaseRepo = context.read<ShowcaseRepo>();
-    final materials = context.read<MaterialsRepo>();
-    final supplies = context.read<SupplyRepository>();
+  Future<Sale?> _createSale(BuildContext context, AssembledProduct p) async {
+    final selection = await pickClient(context);
+    if (selection == null) return null;
 
-    for (final ing in product.ingredients) {
-      materials.returnQuantity(ing.materialId, ing.quantity);
-      supplies.returnFromBouquet(ing.materialId, ing.quantity);
+    final client = selection.withoutClient ? null : selection.client;
+    final materialsRepo = context.read<MaterialsRepo>();
+    final authRepo = context.read<AuthRepo>();
+
+    return Sale(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      product: p,
+      quantity: 1,
+      price: p.sellingPrice,
+      date: DateTime.now(),
+      clientId: client?.id,
+      clientName: client?.name,
+      soldBy: authRepo.currentUserLogin,
+      ingredients: p.ingredients.map<SoldIngredient>((ing) {
+        final material = materialsRepo.getById(ing.materialId);
+        final materialName = material?.name ?? ing.materialId;
+        return SoldIngredient(
+          materialId: ing.materialId,
+          usedQuantity: ing.quantity,
+          materialName: materialName,
+        );
+      }).toList(),
+    );
+  }
+
+  // -------------------------------------------------------
+  // РАЗБОР БУКЕТА
+  // -------------------------------------------------------
+  void _dismantle(p) {
+    final showcaseRepo = context.read<ShowcaseRepo>();
+    final materialsRepo = context.read<MaterialsRepo>();
+    final suppliesRepo = context.read<SupplyRepository>();
+
+    for (final ing in p.ingredients) {
+      materialsRepo.returnQuantity(ing.materialId, ing.quantity);
+      suppliesRepo.returnFromBouquet(ing.materialId, ing.quantity);
     }
 
-    showcaseRepo.removeProduct(product);
+    showcaseRepo.removeProduct(p.id);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Товар удалён")),
+    );
   }
 }

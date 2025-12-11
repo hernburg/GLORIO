@@ -1,32 +1,38 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import '../models/supply.dart';
 import '../models/materialitem.dart';
 import 'materials_repo.dart';
 
 class SupplyRepository extends ChangeNotifier {
-  final List<Supply> _supplies = [];
+  static const boxName = 'suppliesBox';
 
-  List<Supply> get supplies => List.unmodifiable(_supplies);
+  late Box<Supply> _box;
 
-  void addSupply(Supply supply) {
-    _supplies.add(supply);
+  List<Supply> get supplies => _box.values.toList();
+
+  Future<void> init() async {
+    _box = await Hive.openBox<Supply>(boxName);
     notifyListeners();
   }
 
-  Supply? getById(String id) {
-    try {
-      return _supplies.firstWhere((s) => s.id == id);
-    } catch (_) {
-      return null;
-    }
+  Supply? getById(String id) => _box.get(id);
+
+  void addSupply(Supply s) {
+    _box.put(s.id, s);
+    notifyListeners();
+  }
+
+  void updateSupply(Supply updated) {
+   _box.put(updated.id, updated);
+   notifyListeners();
   }
 
   void removeSupply(String id) {
-    _supplies.removeWhere((s) => s.id == id);
+    _box.delete(id);
     notifyListeners();
   }
 
-  /// Добавить поставку + создать материал
   void addSupplyAndMaterial(Supply supply, MaterialsRepo materials) {
     addSupply(supply);
 
@@ -34,10 +40,10 @@ class SupplyRepository extends ChangeNotifier {
       MaterialItem(
         id: supply.id,
         name: supply.name,
-        quantity: supply.quantity,
-        costPerUnit: supply.purchasePrice,
+        quantity: supply.quantity.toDouble(),
+        costPerUnit: supply.purchasePrice.toDouble(),
         supplyId: supply.id,
-        photoUrl: null,
+        photoUrl: supply.photoUrl,
         categoryId: 'flowers',
         categoryName: 'Цветы',
         isInfinite: false,
@@ -45,55 +51,43 @@ class SupplyRepository extends ChangeNotifier {
     );
   }
 
-  /// Списание в букеты
-  void consumeFromSupply(String supplyId, double qty) {
-    final supply = getById(supplyId);
-    if (supply == null) return;
+  void consumeFromSupply(String id, double qty) {
+    final s = getById(id);
+    if (s == null) return;
 
-    final updated = supply.copyWith(
-      usedInBouquets: supply.usedInBouquets + qty,
+    final double newUsed = (s.usedInBouquets + qty).toDouble();
+
+    _box.put(
+      id,
+      s.copyWith(usedInBouquets: newUsed),
     );
-
-    _update(updated);
+    notifyListeners();
   }
 
-  /// Возврат при удалении ингредиента
-  void returnFromBouquet(String supplyId, double qty) {
-    final supply = getById(supplyId);
-    if (supply == null) return;
+  void returnFromBouquet(String id, double qty) {
+    final s = getById(id);
+    if (s == null) return;
 
-    double used = supply.usedInBouquets - qty;
-    if (used < 0) used = 0;
+    final double newUsed =
+        (s.usedInBouquets - qty).clamp(0, double.infinity).toDouble();
 
-    final updated = supply.copyWith(
-      usedInBouquets: used,
+    _box.put(
+      id,
+      s.copyWith(usedInBouquets: newUsed),
     );
-
-    _update(updated);
+    notifyListeners();
   }
 
-  /// Ручное списание
-  void writeOff(String supplyId, double qty) {
-    final supply = getById(supplyId);
-    if (supply == null) return;
+  void writeOff(String id, double qty) {
+    final s = getById(id);
+    if (s == null) return;
 
-    final updated = supply.copyWith(
-      writtenOff: supply.writtenOff + qty,
+    final double newWrittenOff = (s.writtenOff + qty).toDouble();
+
+    _box.put(
+      id,
+      s.copyWith(writtenOff: newWrittenOff),
     );
-
-    _update(updated);
-  }
-
-  /// Обновление поставки
-  void updateSupply(Supply updated) {
-    _update(updated);
-  }
-
-  void _update(Supply updated) {
-    final index = _supplies.indexWhere((s) => s.id == updated.id);
-    if (index == -1) return;
-
-    _supplies[index] = updated;
     notifyListeners();
   }
 }

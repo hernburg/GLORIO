@@ -1,11 +1,16 @@
-class Ingredient {
-  /// ID материала (цветок, лента и т.п.)
+import 'package:hive/hive.dart';
+
+part 'ingredient.g.dart';
+
+@HiveType(typeId: 3)
+class Ingredient extends HiveObject {
+  @HiveField(0)
   final String materialId;
 
-  /// Сколько единиц материала ушло в сборку
+  @HiveField(1)
   final double quantity;
 
-  /// Себестоимость одной единицы
+  @HiveField(2)
   final double costPerUnit;
 
   Ingredient({
@@ -14,6 +19,5 @@ class Ingredient {
     required this.costPerUnit,
   });
 
-  /// Общая себестоимость этого ингредиента
   double get totalCost => quantity * costPerUnit;
 }

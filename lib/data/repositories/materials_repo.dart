@@ -1,59 +1,54 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import '../models/materialitem.dart';
 
 class MaterialsRepo extends ChangeNotifier {
-  final List<MaterialItem> _materials = [];
+  static const boxName = 'materialsBox';
 
-  List<MaterialItem> get materials => List.unmodifiable(_materials);
+  late Box<MaterialItem> _box;
 
-  /// Добавление материала из поставки
+  List<MaterialItem> get materials => _box.values.toList();
+
+  Future<void> init() async {
+    _box = await Hive.openBox<MaterialItem>(boxName);
+    notifyListeners();
+  }
+
   void addMaterial(MaterialItem item) {
-    _materials.add(item);
+    _box.put(item.id, item);
     notifyListeners();
   }
 
   MaterialItem? getById(String id) {
-    try {
-      return _materials.firstWhere((m) => m.id == id);
-    } catch (_) {
-      return null;
-    }
+    return _box.get(id);
   }
 
-  /// Списание (уменьшение) остатка
   void reduceQuantity(String id, double qty) {
-    final index = _materials.indexWhere((m) => m.id == id);
-    if (index == -1) return;
+    final m = _box.get(id);
+    if (m == null || m.isInfinite) return;
 
-    final material = _materials[index];
+    final double newQty =
+        (m.quantity - qty).clamp(0, double.infinity).toDouble();
 
-    if (material.isInfinite) return;
-
-    double newQty = material.quantity - qty;
-    if (newQty < 0) newQty = 0;
-
-    _materials[index] = material.copyWith(quantity: newQty);
+    _box.put(id, m.copyWith(quantity: newQty));
     notifyListeners();
   }
 
-  /// Возврат количества (если удалили ингредиент)
   void returnQuantity(String id, double qty) {
-    final index = _materials.indexWhere((m) => m.id == id);
-    if (index == -1) return;
+    final m = _box.get(id);
+    if (m == null || m.isInfinite) return;
 
-    final material = _materials[index];
+    final double newQty = (m.quantity + qty).toDouble();
 
-    if (material.isInfinite) return;
-
-    _materials[index] =
-        material.copyWith(quantity: material.quantity + qty);
-
+    _box.put(id, m.copyWith(quantity: newQty));
     notifyListeners();
   }
 
-  /// Полное удаление карточки материала
   void removeMaterial(String id) {
-    _materials.removeWhere((m) => m.id == id);
+    _box.delete(id);
     notifyListeners();
   }
+  bool exists(String id) {
+  return _box.containsKey(id);
+}
 }

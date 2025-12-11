@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../../data/repositories/auth_repo.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,6 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
   String? errorText;
 
   void fakeLogin() {
+    debugPrint("FAKE LOGIN CALLED");
     final phone = phoneController.text.trim();
     final pass = passwordController.text.trim();
 
@@ -31,7 +33,7 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     /// После логина → перейти в приложение с нижним меню
-    context.go('/supplies');
+    context.read<AuthRepo>().login(login: phone);
   }
 
   @override
@@ -50,7 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
           /// Лёгкое матовое затемнение, чтобы логотип читался
           Positioned.fill(
             child: Container(
-              color: Colors.white.withOpacity(0.4),
+              color: Colors.white.withValues(alpha: 0.4),
             ),
           ),
 

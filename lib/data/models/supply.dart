@@ -1,23 +1,31 @@
-class Supply {
+import 'package:hive/hive.dart';
+
+part 'supply.g.dart';
+
+@HiveType(typeId: 6)
+class Supply extends HiveObject {
+  @HiveField(0)
   final String id;
+
+  @HiveField(1)
   final String name;
 
-  /// Всегда double — потому что в остатках у цветов бывают дроби
+  @HiveField(2)
   final double quantity;
 
-  /// Сколько использовано в букетах
+  @HiveField(3)
   final double usedInBouquets;
 
-  /// Сколько списано
+  @HiveField(4)
   final double writtenOff;
 
-  /// Цена закупки (за штуку/ветку)
+  @HiveField(5)
   final double purchasePrice;
 
-  /// Дата поставки
+  @HiveField(6)
   final DateTime supplyDate;
 
-  /// Фото (опционально)
+  @HiveField(7)
   final String? photoUrl;
 
   Supply({
