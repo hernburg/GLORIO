@@ -7,15 +7,11 @@ class SalesRepo extends ChangeNotifier {
 
   late Box<Sale> _box;
 
+  List<Sale> get sales => _box.values.toList();
+
   Future<void> init() async {
     _box = await Hive.openBox<Sale>(boxName);
     notifyListeners();
-  }
-
-  List<Sale> get sales {
-    final list = _box.values.toList();
-    list.sort((a, b) => b.date.compareTo(a.date));
-    return list;
   }
 
   void addSale(Sale sale) {

@@ -21,7 +21,7 @@ import 'data/models/ingredient.dart';
 import 'data/models/assembled_product.dart';
 import 'data/models/materialitem.dart';
 import 'data/models/supply.dart';
-// import 'data/models/sale.dart';  // ← если будет SaleAdapter
+import 'data/models/sale.dart';  // ← если будет SaleAdapter
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,7 +33,7 @@ void main() async {
   Hive.registerAdapter(AssembledProductAdapter());
   Hive.registerAdapter(MaterialItemAdapter());
   Hive.registerAdapter(SupplyAdapter());
-  // Hive.registerAdapter(SaleAdapter()); ← добавим, когда ты скажешь
+  Hive.registerAdapter(SaleAdapter());
 
   // ------ СОЗДАЕМ ЕДИНСТВЕННЫЕ ИНСТАНСЫ ------
   final materialsRepo = MaterialsRepo();

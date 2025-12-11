@@ -8,6 +8,7 @@ import '../../../data/repositories/sales_repo.dart';
 import '../../../data/models/sale.dart';
 import '../../../data/repositories/materials_repo.dart';
 import '../../../data/repositories/supply_repo.dart';
+import '../../../data/models/sold_ingredient.dart';
 
 class SalesListScreen extends StatefulWidget {
   const SalesListScreen({super.key});
@@ -28,9 +29,7 @@ class _SalesListScreenState extends State<SalesListScreen> {
       body: Column(
         children: [
           const SizedBox(height: 40),
-
           _buildTabs(),
-
           const SizedBox(height: 10),
 
           Expanded(
@@ -43,9 +42,9 @@ class _SalesListScreenState extends State<SalesListScreen> {
     );
   }
 
-  // -------------------------------
+  // -------------------------------------------------------
   // LIQUID GLASS ТАБЫ
-  // -------------------------------
+  // -------------------------------------------------------
   Widget _buildTabs() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -139,9 +138,9 @@ class _SalesListScreenState extends State<SalesListScreen> {
     );
   }
 
-  // -------------------------------
+  // -------------------------------------------------------
   // В ПРОДАЖЕ
-  // -------------------------------
+  // -------------------------------------------------------
   Widget _buildAvailable(List products) {
     if (products.isEmpty) {
       return const Center(child: Text("На витрине пока пусто"));
@@ -158,8 +157,8 @@ class _SalesListScreenState extends State<SalesListScreen> {
           title: p.name,
           photoUrl: p.photoUrl,
           subtitles: [
-            "Себестоимость: ${p.costPrice} ₽",
-            "Цена продажи: ${p.sellingPrice} ₽",
+            "Себестоимость: ${p.costPrice}",
+            "Цена продажи: ${p.sellingPrice}",
           ],
           actions: [
             AppCardAction(
@@ -178,9 +177,9 @@ class _SalesListScreenState extends State<SalesListScreen> {
     );
   }
 
-  // -------------------------------
+  // -------------------------------------------------------
   // ПРОДАНО
-  // -------------------------------
+  // -------------------------------------------------------
   Widget _buildSold(List<Sale> sales) {
     if (sales.isEmpty) {
       return const Center(child: Text("Пока нет завершённых продаж"));
@@ -213,47 +212,47 @@ class _SalesListScreenState extends State<SalesListScreen> {
     );
   }
 
-  // -------------------------------
+  // -------------------------------------------------------
   // ПРОДАЖА
-  // -------------------------------
-void _sell(p) {
-  final salesRepo = context.read<SalesRepo>();
-  final showcaseRepo = context.read<ShowcaseRepo>();
-  final materialsRepo = context.read<MaterialsRepo>();
-  final suppliesRepo = context.read<SupplyRepository>();
+  // -------------------------------------------------------
+  void _sell(p) {
+    final salesRepo = context.read<SalesRepo>();
+    final showcaseRepo = context.read<ShowcaseRepo>();
+    final materialsRepo = context.read<MaterialsRepo>();
+    final suppliesRepo = context.read<SupplyRepository>();
 
-  final sale = Sale(
-    id: DateTime.now().millisecondsSinceEpoch.toString(),
-    product: p,
-    quantity: 1,
-    price: p.sellingPrice,
-    date: DateTime.now(),
+    final sale = Sale(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      product: p,
+      quantity: 1,
+      price: p.sellingPrice,
+      date: DateTime.now(),
 
-    ingredients: p.ingredients.map<SoldIngredient>((ing) {
-      return SoldIngredient(
-        materialId: ing.materialId,
-        usedQuantity: ing.quantity,
-      );
-    }).toList(),
-  );
+      ingredients: p.ingredients.map<SoldIngredient>((ing) {
+        return SoldIngredient(
+          materialId: ing.materialId,
+          usedQuantity: ing.quantity,
+        );
+      }).toList(),
+    );
 
-  salesRepo.addSale(sale);
-  showcaseRepo.removeProduct(p.id);
+    salesRepo.addSale(sale);
+    showcaseRepo.removeProduct(p.id);
 
-  for (final ing in p.ingredients) {
-    materialsRepo.returnQuantity(ing.materialId, ing.quantity);
-    suppliesRepo.returnFromBouquet(ing.materialId, ing.quantity);
+    for (final ing in p.ingredients) {
+      materialsRepo.returnQuantity(ing.materialId, ing.quantity);
+      suppliesRepo.returnFromBouquet(ing.materialId, ing.quantity);
+    }
+
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text("Товар продан")));
+
+    setState(() => tabIndex = 1);
   }
 
-  ScaffoldMessenger.of(context)
-      .showSnackBar(const SnackBar(content: Text("Товар продан")));
-
-  setState(() => tabIndex = 1);
-}
-
-  // -------------------------------
+  // -------------------------------------------------------
   // РАЗБОР БУКЕТА
-  // -------------------------------
+  // -------------------------------------------------------
   void _dismantle(p) {
     final showcaseRepo = context.read<ShowcaseRepo>();
     final materialsRepo = context.read<MaterialsRepo>();

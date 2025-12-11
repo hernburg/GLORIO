@@ -10,6 +10,7 @@ import '../../../data/models/sale.dart';
 import '../../../data/repositories/showcase_repo.dart';
 import '../../../data/repositories/sales_repo.dart';
 import '../../../data/repositories/materials_repo.dart';
+import '../../../data/models/sold_ingredient.dart';
 
 class ShowcaseListScreen extends StatelessWidget {
   const ShowcaseListScreen({super.key});
@@ -86,21 +87,21 @@ class _ShowcaseCard extends StatelessWidget {
             final salesRepo = context.read<SalesRepo>();
 
             final sale = Sale(
-              id: DateTime.now().millisecondsSinceEpoch.toString(),
-              product: item,
-              quantity: 1,
-              price: item.sellingPrice,
-              date: DateTime.now(),
-              ingredients: item.ingredients.map((ing) {
-                return SoldIngredient(
-                  materialId: ing.materialId,
-                  usedQuantity: ing.quantity,
-                );
-              }).toList(),
-            );
+  id: DateTime.now().millisecondsSinceEpoch.toString(),
+  product: item, // сохраняем копию всего букета
+  quantity: 1,
+  price: item.sellingPrice,
+  date: DateTime.now(),
+  ingredients: item.ingredients.map((ing) {
+    return SoldIngredient(
+      materialId: ing.materialId,
+      usedQuantity: ing.quantity,
+    );
+  }).toList(),
+);
 
-            salesRepo.addSale(sale);
-            showcaseRepo.removeProduct(item.id);
+salesRepo.addSale(sale);
+showcaseRepo.removeProduct(item.id);
 
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text("Букет продан!")),

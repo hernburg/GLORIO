@@ -1,23 +1,10 @@
 import 'package:hive/hive.dart';
 import 'assembled_product.dart';
+import 'sold_ingredient.dart';
 
 part 'sale.g.dart';
 
-@HiveType(typeId: 10)
-class SoldIngredient {
-  @HiveField(0)
-  final String materialId;
-
-  @HiveField(1)
-  final double usedQuantity;
-
-  SoldIngredient({
-    required this.materialId,
-    required this.usedQuantity,
-  });
-}
-
-@HiveType(typeId: 11)
+@HiveType(typeId: 22)
 class Sale {
   @HiveField(0)
   final String id;
