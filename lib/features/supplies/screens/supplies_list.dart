@@ -62,7 +62,7 @@ class SuppliesListScreen extends StatelessWidget {
                       icon: Icons.edit_document,
                       color: const Color.fromARGB(74, 94, 94, 94),
                       onTap: () {
-                        // TODO: списание товара
+                        // Списание товара будет добавлено позже
                       },
                     ),
                     AppCardAction(

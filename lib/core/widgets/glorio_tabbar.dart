@@ -104,12 +104,12 @@ class _GlorioTabBarState extends State<GlorioTabBar>
                     ],
                   ),
                   border: Border.all(
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                     width: 1.3,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.06),
+                      color: Colors.black.withValues(alpha: 0.06),
                       blurRadius: 22,
                       offset: const Offset(0, 10),
                     ),
@@ -159,15 +159,18 @@ class _GlorioTabBarState extends State<GlorioTabBar>
                                             gradient: LinearGradient(
                                               begin: Alignment.topLeft,
                                               end: Alignment.bottomRight,
-                                              colors: [
-                                                Colors.white.withOpacity(0.60),
+                                            colors: [
+                                                Colors.white
+                                                    .withValues(alpha: 0.60),
                                                 const Color(0xFFB2FFF3)
-                                                    .withOpacity(0.32),
-                                                Colors.white.withOpacity(0.35),
+                                                    .withValues(alpha: 0.32),
+                                                Colors.white
+                                                    .withValues(alpha: 0.35),
                                               ],
                                             ),
                                             border: Border.all(
-                                              color: Colors.white.withOpacity(0.50),
+                                              color: Colors.white
+                                                  .withValues(alpha: 0.50),
                                               width: 1.6,
                                             ),
                                             boxShadow: [
@@ -177,7 +180,7 @@ class _GlorioTabBarState extends State<GlorioTabBar>
                                                   0,
                                                   255,
                                                   214,
-                                                ).withOpacity(0.10),
+                                                ).withValues(alpha: 0.10),
                                                 blurRadius: 10,
                                                 offset: const Offset(0, 12),
                                               ),
