@@ -56,9 +56,8 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthRepo()),
-        ChangeNotifierProxyProvider<AuthRepo, AppRouter>(
+        Provider(
           create: (context) => AppRouter(context.read<AuthRepo>()),
-          update: (context, auth, prev) => AppRouter(auth),
         ),
 
         ChangeNotifierProvider.value(value: materialsRepo),
