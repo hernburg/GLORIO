@@ -18,7 +18,9 @@ class RootShell extends StatelessWidget {
       '/clients',
       '/writeoff',
       '/reports'
-    ].indexWhere((path) => location.startsWith(path)).clamp(0, 5);
+    ].indexWhere((path) => location.startsWith(path));
+
+    final currentIndex = index >= 0 ? index : 0;
 
     void onTap(int i) {
       const routes = [
@@ -37,7 +39,7 @@ class RootShell extends StatelessWidget {
 
       // 🔥 Подключаем новый GLORIO Telegram-style таббар
       bottomNavigationBar: GlorioTabBar(
-        currentIndex: index,
+        currentIndex: currentIndex,
         onTap: onTap,
       ),
     );

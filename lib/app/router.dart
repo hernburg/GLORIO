@@ -21,6 +21,7 @@ import '../features/sales/screens/sale_info_screen.dart';
 
 // --- CLIENTS ---
 import '../features/clients/screens/clients_list.dart';
+import '../features/clients/screens/client_edit_screen.dart';
 import '../data/models/client.dart';
 
 // --- WRITE-OFF ---
@@ -50,7 +51,7 @@ final List<RouteBase> appRoutes = [
   GoRoute(
     path: '/welcome',
     parentNavigatorKey: rootNavigatorKey,
-    builder: (_, __) => const WelcomeScreen(),
+    builder: (context, state) => const WelcomeScreen(),
   ),
 
   /// -------------------------
@@ -59,7 +60,7 @@ final List<RouteBase> appRoutes = [
   GoRoute(
     path: '/login',
     parentNavigatorKey: rootNavigatorKey,   // правильно
-    builder: (_, __) => const LoginScreen(),
+    builder: (context, state) => const LoginScreen(),
   ),
 
   /// -------------------------
@@ -67,21 +68,21 @@ final List<RouteBase> appRoutes = [
   /// -------------------------
   ShellRoute(
     navigatorKey: shellNavigatorKey,
-    builder: (_, state, child) => RootShell(child: child),
+    builder: (context, state, child) => RootShell(child: child),
 
     routes: [
 
       GoRoute(
         path: '/supplies',
-        builder: (_, __) => const SuppliesListScreen(),
+        builder: (context, state) => const SuppliesListScreen(),
       ),
       GoRoute(
         path: '/supplies/new',
-        builder: (_, __) => const SupplyCreateScreen(),
+        builder: (context, state) => const SupplyCreateScreen(),
       ),
       GoRoute(
         path: '/supplies/edit/:id',
-        builder: (_, state) {
+        builder: (context, state) {
           final id = state.pathParameters['id']!;
           return SupplyEditScreen(id: id);
         },
@@ -90,15 +91,15 @@ final List<RouteBase> appRoutes = [
       /// SHOWCASE
       GoRoute(
         path: '/showcase',
-        builder: (_, __) => const ShowcaseListScreen(),
+        builder: (context, state) => const ShowcaseListScreen(),
       ),
       GoRoute(
         path: '/assemble',
-        builder: (_, __) => const AssembleProductScreen(),
+        builder: (context, state) => const AssembleProductScreen(),
       ),
       GoRoute(
         path: '/assemble_edit/:id',
-        builder: (_, state) {
+        builder: (context, state) {
           final id = state.pathParameters['id']!;
           return AssembleProductScreen(editId: id);
         },
@@ -107,11 +108,11 @@ final List<RouteBase> appRoutes = [
       /// SALES
       GoRoute(
         path: '/sales',
-        builder: (_, __) => const SalesListScreen(),
+        builder: (context, state) => const SalesListScreen(),
       ),
       GoRoute(
         path: '/sale_info/:id',
-        builder: (_, state) {
+        builder: (context, state) {
           final id = state.pathParameters['id']!;
           return SaleInfoScreen(saleId: id);
         },
@@ -120,7 +121,7 @@ final List<RouteBase> appRoutes = [
       /// CLIENTS
       GoRoute(
         path: '/clients',
-        builder: (_, __) => const ClientsListScreen(),
+        builder: (context, state) => const ClientsListScreen(),
       ),
 
       GoRoute(
@@ -136,19 +137,19 @@ final List<RouteBase> appRoutes = [
       /// WRITE-OFF
       GoRoute(
         path: '/writeoff',
-        builder: (_, __) => const WriteoffListScreen(),
+        builder: (context, state) => const WriteoffListScreen(),
       ),
 
       /// REPORTS
       GoRoute(
         path: '/reports',
-        builder: (_, __) => const ReportsDashboard(),
+        builder: (context, state) => const ReportsDashboard(),
       ),
 
       /// MATERIAL SELECT
       GoRoute(
         path: '/materials/select',
-        builder: (_, state) {
+        builder: (context, state) {
           final onSelect = state.extra as Function(dynamic);
           return MaterialSelectScreen(onSelect: onSelect);
         },
