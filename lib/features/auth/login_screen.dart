@@ -41,11 +41,19 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          /// Фоновая картинка
+          /// Фоновый градиент
           Positioned.fill(
-            child: Image.asset(
-              'assets/login_background.jpg',
-              fit: BoxFit.cover,
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xFFEFF6F7),
+                    Color(0xFFD5E8E5),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
             ),
           ),
 
@@ -64,7 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   /// Логотип
                   Image.asset(
-                    'assets/glorio_logo.png',
+                    'assets/logo/glorio_logo.png',
                     height: 120,
                   ),
 
