@@ -41,14 +41,6 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          /// Фоновая картинка
-          Positioned.fill(
-            child: Image.asset(
-              'assets/login_background.jpg',
-              fit: BoxFit.cover,
-            ),
-          ),
-
           /// Лёгкое матовое затемнение, чтобы логотип читался
           Positioned.fill(
             child: Container(
@@ -64,8 +56,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   /// Логотип
                   Image.asset(
-                    'assets/glorio_logo.png',
-                    height: 120,
+                    'assets/logo/glorio_logo.png',
+                    height: 300,
                   ),
 
                   const SizedBox(height: 24),
@@ -123,7 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           end: Alignment.bottomCenter,
                           colors: [
                             Color.fromARGB(255, 162, 162, 255),
-                            Color.fromARGB(98, 3, 158, 255),
+                            Color.fromARGB(97, 255, 132, 0),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(30),
