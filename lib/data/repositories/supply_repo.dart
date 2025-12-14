@@ -1,93 +1,153 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
+
 import '../models/supply.dart';
-import '../models/materialitem.dart';
+import '../models/supply_item.dart';
 import 'materials_repo.dart';
 
 class SupplyRepository extends ChangeNotifier {
-  static const boxName = 'suppliesBox';
+  static const _boxName = 'supplies';
 
+  final MaterialsRepo materialsRepo;
   late Box<Supply> _box;
+
+  SupplyRepository(this.materialsRepo);
+
+  // ---------------------------------------------------------------------------
+  // INIT
+  // ---------------------------------------------------------------------------
+
+  Future<void> init() async {
+    _box = await Hive.openBox<Supply>(_boxName);
+  }
 
   List<Supply> get supplies => _box.values.toList();
 
-  Future<void> init() async {
-    _box = await Hive.openBox<Supply>(boxName);
-    notifyListeners();
-  }
+  // ---------------------------------------------------------------------------
+  // ADD SUPPLY
+  // ---------------------------------------------------------------------------
 
-  Supply? getById(String id) => _box.get(id);
+  void addSupply({
+    required DateTime date,
+    required List<SupplyItem> items,
+  }) {
+    final supplyId = DateTime.now().millisecondsSinceEpoch.toString();
 
-  void addSupply(Supply s) {
-    _box.put(s.id, s);
-    notifyListeners();
-  }
-
-  void updateSupply(Supply updated) {
-   _box.put(updated.id, updated);
-   notifyListeners();
-  }
-
-  void removeSupply(String id) {
-    _box.delete(id);
-    notifyListeners();
-  }
-
-  void addSupplyAndMaterial(Supply supply, MaterialsRepo materials) {
-    addSupply(supply);
-
-    materials.addMaterial(
-      MaterialItem(
-        id: supply.id,
-        name: supply.name,
-        quantity: supply.quantity.toDouble(),
-        costPerUnit: supply.purchasePrice.toDouble(),
-        supplyId: supply.id,
-        photoUrl: supply.photoUrl,
-        categoryId: 'flowers',
-        categoryName: 'Цветы',
-        isInfinite: false,
-      ),
+    final supply = Supply(
+      id: supplyId,
+      date: date,
+      items: items,
     );
-  }
 
-  void consumeFromSupply(String id, double qty) {
-    final s = getById(id);
-    if (s == null) return;
+    _box.put(supplyId, supply);
 
-    final double newUsed = (s.usedInBouquets + qty).toDouble();
+    // обновляем склад материалов
+    for (final item in items) {
+      materialsRepo.upsertFromSupplyItem(
+        materialKey: item.materialKey,
+        name: item.name,
+        categoryId: item.categoryId,
+        categoryName: item.categoryName,
+        quantity: item.quantity,
+        costPerUnit: item.costPerUnit,
+        supplyId: supplyId,
+      );
+    }
 
-    _box.put(
-      id,
-      s.copyWith(usedInBouquets: newUsed),
-    );
     notifyListeners();
   }
 
-  void returnFromBouquet(String id, double qty) {
-    final s = getById(id);
-    if (s == null) return;
+  // ---------------------------------------------------------------------------
+  // DELETE SUPPLY
+  // ---------------------------------------------------------------------------
 
-    final double newUsed =
-        (s.usedInBouquets - qty).clamp(0, double.infinity).toDouble();
-
-    _box.put(
-      id,
-      s.copyWith(usedInBouquets: newUsed),
-    );
+  void deleteSupply(String key) {
+    _box.delete(key);
     notifyListeners();
   }
 
-  void writeOff(String id, double qty) {
-    final s = getById(id);
-    if (s == null) return;
+  // ---------------------------------------------------------------------------
+  // STOCK CALCULATION
+  // ---------------------------------------------------------------------------
 
-    final double newWrittenOff = (s.writtenOff + qty).toDouble();
+  double totalAvailable(String materialKey) {
+    double total = 0;
 
-    _box.put(
-      id,
-      s.copyWith(writtenOff: newWrittenOff),
-    );
+    for (final supply in supplies) {
+      for (final item in supply.items) {
+        if (item.materialKey == materialKey) {
+          total += item.quantity;
+        }
+      }
+    }
+
+    return total;
+  }
+
+  double getAvailableQty(String materialKey) {
+    return totalAvailable(materialKey);
+  }
+
+  // ---------------------------------------------------------------------------
+  // FIFO CONSUMPTION
+  // ---------------------------------------------------------------------------
+
+  void consumeMaterial({
+    required String materialKey,
+    required double qty,
+  }) {
+    final sortedSupplies = [...supplies]
+      ..sort((a, b) => a.date.compareTo(b.date));
+
+    double remaining = qty;
+
+    for (final supply in sortedSupplies) {
+      if (remaining <= 0) break;
+
+      final updatedItems = <SupplyItem>[];
+
+      for (final item in supply.items) {
+        if (item.materialKey != materialKey || remaining <= 0) {
+          updatedItems.add(item);
+          continue;
+        }
+
+        final used =
+            remaining <= item.quantity ? remaining : item.quantity;
+
+        remaining -= used;
+
+        updatedItems.add(
+          item.copyWith(
+            quantity: item.quantity - used,
+          ),
+        );
+      }
+
+      _box.put(
+        supply.id,
+        supply.copyWith(items: updatedItems),
+      );
+    }
+
+    notifyListeners();
+  }
+
+  // ---------------------------------------------------------------------------
+  // PLACEHOLDERS
+  // ---------------------------------------------------------------------------
+
+  void consumeFromSupply({
+    required String materialKey,
+    required double qty,
+  }) {
+    notifyListeners();
+  }
+
+  void returnFromBouquet({
+    required String materialKey,
+    required double qty,
+  }) {
     notifyListeners();
   }
 }

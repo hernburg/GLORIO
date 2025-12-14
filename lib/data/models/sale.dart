@@ -1,7 +1,6 @@
 import 'package:hive/hive.dart';
 import 'assembled_product.dart';
 import 'sold_ingredient.dart';
-import 'ingredient.dart';
 
 part 'sale.g.dart';
 

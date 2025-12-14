@@ -1,37 +1,46 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'ingredient.dart';
+part of 'supply_item.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class IngredientAdapter extends TypeAdapter<Ingredient> {
+class SupplyItemAdapter extends TypeAdapter<SupplyItem> {
   @override
-  final int typeId = 21;
+  final int typeId = 6;
 
   @override
-  Ingredient read(BinaryReader reader) {
+  SupplyItem read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return Ingredient(
+    return SupplyItem(
       materialKey: fields[0] as String,
-      quantity: fields[1] as double,
-      costPerUnit: fields[2] as double,
+      name: fields[1] as String,
+      categoryId: fields[2] as String,
+      categoryName: fields[3] as String,
+      quantity: fields[4] as double,
+      costPerUnit: fields[5] as double,
     );
   }
 
   @override
-  void write(BinaryWriter writer, Ingredient obj) {
+  void write(BinaryWriter writer, SupplyItem obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.materialKey)
       ..writeByte(1)
-      ..write(obj.quantity)
+      ..write(obj.name)
       ..writeByte(2)
+      ..write(obj.categoryId)
+      ..writeByte(3)
+      ..write(obj.categoryName)
+      ..writeByte(4)
+      ..write(obj.quantity)
+      ..writeByte(5)
       ..write(obj.costPerUnit);
   }
 
@@ -41,7 +50,7 @@ class IngredientAdapter extends TypeAdapter<Ingredient> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is IngredientAdapter &&
+      other is SupplyItemAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

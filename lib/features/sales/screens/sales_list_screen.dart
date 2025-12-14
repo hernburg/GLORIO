@@ -3,15 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/widgets/app_card.dart';
+import '../../../ui/app_card.dart';
+import '../../../ui/app_button.dart';
+
 import '../../../data/models/assembled_product.dart';
+import '../../../data/models/sale.dart';
+import '../../../data/models/sold_ingredient.dart';
+
 import '../../../data/repositories/showcase_repo.dart';
 import '../../../data/repositories/sales_repo.dart';
-import '../../../data/models/sale.dart';
 import '../../../data/repositories/materials_repo.dart';
 import '../../../data/repositories/supply_repo.dart';
-import '../../../data/models/sold_ingredient.dart';
 import '../../../data/repositories/auth_repo.dart';
+
 import '../widgets/client_selector.dart';
 
 class SalesListScreen extends StatefulWidget {
@@ -30,12 +34,12 @@ class _SalesListScreenState extends State<SalesListScreen> {
     final sales = context.watch<SalesRepo>().sales;
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF6F3EE),
       body: Column(
         children: [
           const SizedBox(height: 40),
           _buildTabs(),
-          const SizedBox(height: 10),
-
+          const SizedBox(height: 12),
           Expanded(
             child: tabIndex == 0
                 ? _buildAvailable(showcase)
@@ -46,9 +50,9 @@ class _SalesListScreenState extends State<SalesListScreen> {
     );
   }
 
-  // -------------------------------------------------------
-  // LIQUID GLASS ТАБЫ
-  // -------------------------------------------------------
+  // ---------------------------------------------------------------------------
+  // TABS
+  // ---------------------------------------------------------------------------
   Widget _buildTabs() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -59,64 +63,17 @@ class _SalesListScreenState extends State<SalesListScreen> {
           child: Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.white.withValues(alpha: 0.28),
-                  Colors.white.withValues(alpha: 0.12),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
               borderRadius: BorderRadius.circular(22),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.4),
-                width: 1.2,
-              ),
+              border: Border.all(color: Colors.black12),
+              color: Colors.white.withValues(alpha: 0.6),
             ),
-            child: Stack(
+            child: Row(
               children: [
-                AnimatedAlign(
-                  duration: const Duration(milliseconds: 260),
-                  curve: Curves.easeOutCubic,
-                  alignment: tabIndex == 0
-                      ? Alignment.centerLeft
-                      : Alignment.centerRight,
-                  child: FractionallySizedBox(
-                    widthFactor: 0.5,
-                    child: Container(
-                      height: 36,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.white.withValues(alpha: 0.55),
-                            Colors.white.withValues(alpha: 0.20),
-                          ],
-                        ),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.5),
-                          width: 1.0,
-                        ),
-                      ),
-                    ),
-                  ),
+                Expanded(
+                  child: _tabButton('В продаже', 0),
                 ),
-
-                Row(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() => tabIndex = 0),
-                        child: _tabLabel("В продаже", tabIndex == 0),
-                      ),
-                    ),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() => tabIndex = 1),
-                        child: _tabLabel("Продано", tabIndex == 1),
-                      ),
-                    ),
-                  ],
+                Expanded(
+                  child: _tabButton('Продано', 1),
                 ),
               ],
             ),
@@ -126,127 +83,140 @@ class _SalesListScreenState extends State<SalesListScreen> {
     );
   }
 
-  Widget _tabLabel(String text, bool active) {
-    return SizedBox(
-      height: 36,
-      child: Center(
+  Widget _tabButton(String text, int index) {
+    final active = tabIndex == index;
+    return GestureDetector(
+      onTap: () => setState(() => tabIndex = index),
+      child: Container(
+        height: 36,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: active ? Colors.white : Colors.transparent,
+        ),
         child: Text(
           text,
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 15,
             fontWeight: FontWeight.w600,
-            color: active ? Colors.black : Colors.grey.shade600,
+            color: active ? Colors.black : Colors.grey,
           ),
         ),
       ),
     );
   }
 
-  // -------------------------------------------------------
+  // ---------------------------------------------------------------------------
   // В ПРОДАЖЕ
-  // -------------------------------------------------------
+  // ---------------------------------------------------------------------------
   Widget _buildAvailable(List<AssembledProduct> products) {
     if (products.isEmpty) {
-      return const Center(child: Text("На витрине пока пусто"));
+      return const Center(child: Text('На витрине пока пусто'));
     }
 
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemCount: products.length,
-      itemBuilder: (context, i) {
+      itemBuilder: (_, i) {
         final p = products[i];
 
         return AppCard(
-          title: p.name,
-          photoUrl: p.photoUrl,
-          subtitles: [
-            "Себестоимость: ${p.costPrice}",
-            "Цена продажи: ${p.sellingPrice}",
-          ],
-          actions: [
-            AppCardAction(
-              icon: Icons.shopping_bag,
-              color: Colors.green,
-              onTap: () => _sell(p),
-            ),
-            AppCardAction(
-              icon: Icons.delete_sweep,
-              color: Colors.red,
-              onTap: () => _dismantle(p),
-            ),
-          ],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(p.name,
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 6),
+              Text('Себестоимость: ${p.costPrice.toStringAsFixed(0)} ₽'),
+              Text('Цена продажи: ${p.sellingPrice.toStringAsFixed(0)} ₽'),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: AppButton(
+                      text: 'Продать',
+                      onTap: () => _sell(p),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: AppButton(
+                      text: 'Удалить',
+                      onTap: () => _dismantle(p),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         );
       },
     );
   }
 
-  // -------------------------------------------------------
+  // ---------------------------------------------------------------------------
   // ПРОДАНО
-  // -------------------------------------------------------
+  // ---------------------------------------------------------------------------
   Widget _buildSold(List<Sale> sales) {
     if (sales.isEmpty) {
-      return const Center(child: Text("Пока нет завершённых продаж"));
+      return const Center(child: Text('Пока нет завершённых продаж'));
     }
 
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemCount: sales.length,
-      itemBuilder: (context, i) {
+      itemBuilder: (_, i) {
         final s = sales[i];
-
         return AppCard(
-          title: s.product.name,
-          photoUrl: s.product.photoUrl,
-          subtitles: [
-            "Итог: ${s.total.toStringAsFixed(0)} ₽",
-            "Количество: ${s.quantity}",
-            "Дата: ${s.date.day}.${s.date.month}.${s.date.year}",
-          ],
-          actions: [
-            AppCardAction(
-              icon: Icons.info_outline,
-              color: Colors.blue,
-              onTap: () => context.push('/sale_info/${s.id}'),
-            ),
-          ],
+          onTap: () => context.push('/sale_info/${s.id}'),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(s.product.name,
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w600)),
+              Text('Итог: ${s.total.toStringAsFixed(0)} ₽'),
+              Text(
+                  'Дата: ${s.date.day}.${s.date.month}.${s.date.year}'),
+            ],
+          ),
         );
       },
     );
   }
 
-  // -------------------------------------------------------
+  // ---------------------------------------------------------------------------
   // ПРОДАЖА
-  // -------------------------------------------------------
+  // ---------------------------------------------------------------------------
   Future<void> _sell(AssembledProduct p) async {
     final sale = await _createSale(context, p);
-    if (sale == null) return;
+    if (!mounted || sale == null) return;
 
     final salesRepo = context.read<SalesRepo>();
     final showcaseRepo = context.read<ShowcaseRepo>();
-    final materialsRepo = context.read<MaterialsRepo>();
-    final suppliesRepo = context.read<SupplyRepository>();
+    final supplyRepo = context.read<SupplyRepository>();
+
+    for (final ing in p.ingredients) {
+  supplyRepo.consumeMaterial(
+    materialKey: ing.materialKey,
+    qty: ing.quantity,
+  );
+}
 
     salesRepo.addSale(sale);
     showcaseRepo.removeProduct(p.id);
 
-    for (final ing in p.ingredients) {
-      materialsRepo.returnQuantity(ing.materialId, ing.quantity);
-      suppliesRepo.returnFromBouquet(ing.materialId, ing.quantity);
-    }
-
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text("Товар продан")));
-
     setState(() => tabIndex = 1);
   }
 
-  Future<Sale?> _createSale(BuildContext context, AssembledProduct p) async {
+  Future<Sale?> _createSale(
+      BuildContext context, AssembledProduct p) async {
     final selection = await pickClient(context);
     if (selection == null) return null;
 
-    final client = selection.withoutClient ? null : selection.client;
     final materialsRepo = context.read<MaterialsRepo>();
     final authRepo = context.read<AuthRepo>();
 
@@ -256,38 +226,30 @@ class _SalesListScreenState extends State<SalesListScreen> {
       quantity: 1,
       price: p.sellingPrice,
       date: DateTime.now(),
-      clientId: client?.id,
-      clientName: client?.name,
+      clientId: selection.client?.id,
+      clientName: selection.client?.name,
       soldBy: authRepo.currentUserLogin,
-      ingredients: p.ingredients.map<SoldIngredient>((ing) {
-        final material = materialsRepo.getById(ing.materialId);
-        final materialName = material?.name ?? ing.materialId;
+      ingredients: p.ingredients.map((ing) {
+        final m = materialsRepo.getByKey(ing.materialKey);
         return SoldIngredient(
-          materialId: ing.materialId,
-          usedQuantity: ing.quantity,
-          materialName: materialName,
+          materialKey: ing.materialKey,
+          quantity: ing.quantity,
+          costPerUnit: ing.costPerUnit,
+          materialName: m?.name ?? ing.materialKey,
         );
       }).toList(),
     );
   }
 
-  // -------------------------------------------------------
-  // РАЗБОР БУКЕТА
-  // -------------------------------------------------------
-  void _dismantle(p) {
+  // ---------------------------------------------------------------------------
+  // УДАЛЕНИЕ БУКЕТА
+  // ---------------------------------------------------------------------------
+  void _dismantle(AssembledProduct p) {
     final showcaseRepo = context.read<ShowcaseRepo>();
-    final materialsRepo = context.read<MaterialsRepo>();
-    final suppliesRepo = context.read<SupplyRepository>();
-
-    for (final ing in p.ingredients) {
-      materialsRepo.returnQuantity(ing.materialId, ing.quantity);
-      suppliesRepo.returnFromBouquet(ing.materialId, ing.quantity);
-    }
-
     showcaseRepo.removeProduct(p.id);
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Товар удалён")),
+      const SnackBar(content: Text('Товар удалён')),
     );
   }
 }

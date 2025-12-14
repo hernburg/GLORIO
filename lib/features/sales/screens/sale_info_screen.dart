@@ -49,8 +49,8 @@ class SaleInfoScreen extends StatelessWidget {
             ...sale.ingredients.map(
               (ing) => ListTile(
                 contentPadding: EdgeInsets.zero,
-                title: Text(ing.materialName ?? ing.materialId),
-                subtitle: Text('Количество: ${ing.usedQuantity}'),
+                title: Text(ing.materialName ?? ing.materialKey),
+                subtitle: Text('Количество: ${ing.quantity}'),
               ),
             ),
           ],

@@ -19,8 +19,8 @@ class AddButton extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Colors.white.withValues(alpha: 0.35),
-              const Color.fromARGB(255, 255, 166, 0).withValues(alpha: 0.50),
+              const Color.fromARGB(255, 0, 0, 0).withValues(alpha: 0.35),
+              const Color.fromARGB(255, 255, 255, 255).withValues(alpha: 0.50),
             ],
           ),
           border: Border.all(

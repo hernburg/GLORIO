@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../data/models/client.dart';
+import '../../../ui/app_button.dart';
 
 class RelativeFormDialog extends StatefulWidget {
   const RelativeFormDialog({super.key});
@@ -12,41 +13,76 @@ class _RelativeFormDialogState extends State<RelativeFormDialog> {
   final nameCtrl = TextEditingController();
   final birthdayCtrl = TextEditingController();
 
+  void submit() {
+    final name = nameCtrl.text.trim();
+    final birthday = birthdayCtrl.text.trim();
+
+    if (name.isEmpty || birthday.isEmpty) {
+      return;
+    }
+
+    final relative = Relative(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      name: name,
+      birthday: birthday,
+    );
+
+    Navigator.pop(context, relative);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text("Добавить близкого"),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            controller: nameCtrl,
-            decoration: const InputDecoration(labelText: "Имя"),
-          ),
-          TextField(
-            controller: birthdayCtrl,
-            decoration: const InputDecoration(
-                labelText: "Дата рождения (dd.mm.yyyy)"),
-          ),
-        ],
+    return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text("Отмена"),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Добавить близкого',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            TextField(
+              controller: nameCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Имя',
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            TextField(
+              controller: birthdayCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Дата рождения (дд.мм.гггг)',
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            AppButton(
+              text: 'Добавить',
+              onTap: submit,
+            ),
+
+            const SizedBox(height: 8),
+
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Отмена'),
+            ),
+          ],
         ),
-        ElevatedButton(
-          onPressed: () {
-            final r = Relative(
-              id: DateTime.now().millisecondsSinceEpoch.toString(),
-              name: nameCtrl.text.trim(),
-              birthday: birthdayCtrl.text.trim(),
-            );
-            Navigator.pop(context, r);
-          },
-          child: const Text("Добавить"),
-        ),
-      ],
+      ),
     );
   }
 }

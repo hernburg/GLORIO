@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../data/repositories/auth_repo.dart';
+import '../../../data/repositories/auth_repo.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,127 +15,62 @@ class _LoginScreenState extends State<LoginScreen> {
 
   String? errorText;
 
-  void fakeLogin() {
-    debugPrint("FAKE LOGIN CALLED");
+  void login() {
     final phone = phoneController.text.trim();
     final pass = passwordController.text.trim();
 
     if (phone.isEmpty || pass.isEmpty) {
-      setState(() {
-        errorText = "Введите телефон и пароль";
-      });
+      setState(() => errorText = 'Введите телефон и пароль');
       return;
     }
 
-    /// Фейковая авторизация — можно заменить позже на API
-    setState(() {
-      errorText = null;
-    });
-
-    /// После логина → перейти в приложение с нижним меню
-    context.read<AuthRepo>().login(context: context, login: phone);
+    context.read<AuthRepo>().login(
+      context: context,
+      login: phone,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          /// Лёгкое матовое затемнение, чтобы логотип читался
-          Positioned.fill(
-            child: Container(
-              color: Colors.white.withValues(alpha: 0.4),
-            ),
-          ),
-
-          Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  /// Логотип
-                  Image.asset(
-                    'assets/logo/glorio_logo.png',
-                    height: 300,
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  /// Поле — телефон
-                  TextField(
-                    controller: phoneController,
-                    keyboardType: TextInputType.phone,
-                    decoration: InputDecoration(
-                      hintText: "Телефон",
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  /// Поле — пароль
-                  TextField(
-                    controller: passwordController,
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      hintText: "Пароль",
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-
-                  if (errorText != null) ...[
-                    const SizedBox(height: 12),
-                    Text(
-                      errorText!,
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                  ],
-
-                  const SizedBox(height: 26),
-
-                  /// Кнопка входа
-                  GestureDetector(
-                    onTap: fakeLogin,
-                    child: Container(
-                      height: 54,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          begin: Alignment.center,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Color.fromARGB(255, 162, 162, 255),
-                            Color.fromARGB(97, 255, 132, 0),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      alignment: Alignment.center,
-                      child: const Text(
-                        "Войти",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+      backgroundColor: const Color(0xFFF6F3EE),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'GLORIO',
+                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
               ),
-            ),
+              const SizedBox(height: 24),
+
+              TextField(
+                controller: phoneController,
+                decoration: const InputDecoration(labelText: 'Телефон'),
+              ),
+              const SizedBox(height: 12),
+
+              TextField(
+                controller: passwordController,
+                decoration: const InputDecoration(labelText: 'Пароль'),
+                obscureText: true,
+              ),
+
+              if (errorText != null) ...[
+                const SizedBox(height: 12),
+                Text(errorText!, style: const TextStyle(color: Colors.red)),
+              ],
+
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: login,
+                child: const Text('Войти'),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

@@ -1,7 +1,9 @@
-import 'package:flower_accounting_app/core/widgets/add_button.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../../../data/repositories/clients_repo.dart';
+import '../../../ui/app_card.dart';
+import '../../../ui/add_button.dart';
 import 'client_edit_screen.dart';
 
 class ClientsListScreen extends StatelessWidget {
@@ -12,20 +14,15 @@ class ClientsListScreen extends StatelessWidget {
     final repo = context.watch<ClientsRepo>();
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF6F3EE),
       body: ListView.separated(
         padding: const EdgeInsets.all(16),
-        separatorBuilder: (_, __) => const SizedBox(height: 10),
         itemCount: repo.clients.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 12),
         itemBuilder: (context, i) {
           final c = repo.clients[i];
 
-          return ListTile(
-            tileColor: Colors.white.withValues(alpha: 0.1),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            title: Text(c.name),
-            subtitle: Text(c.phone),
+          return AppCard(
             onTap: () {
               Navigator.push(
                 context,
@@ -34,6 +31,27 @@ class ClientsListScreen extends StatelessWidget {
                 ),
               );
             },
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  c.name,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF2E2E2E),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  c.phone,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF7A7A7A),
+                  ),
+                ),
+              ],
+            ),
           );
         },
       ),

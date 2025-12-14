@@ -2,10 +2,10 @@ import 'package:hive/hive.dart';
 
 part 'ingredient.g.dart';
 
-@HiveType(typeId: 3)
-class Ingredient extends HiveObject {
+@HiveType(typeId: 21) // выбери ID, которого точно нет в проекте
+class Ingredient {
   @HiveField(0)
-  final String materialId;
+  final String materialKey;
 
   @HiveField(1)
   final double quantity;
@@ -14,10 +14,21 @@ class Ingredient extends HiveObject {
   final double costPerUnit;
 
   Ingredient({
-    required this.materialId,
+    required this.materialKey,
     required this.quantity,
     required this.costPerUnit,
   });
 
   double get totalCost => quantity * costPerUnit;
+
+  Ingredient copyWith({
+    double? quantity,
+    double? costPerUnit,
+  }) {
+    return Ingredient(
+      materialKey: materialKey,
+      quantity: quantity ?? this.quantity,
+      costPerUnit: costPerUnit ?? this.costPerUnit,
+    );
+  }
 }

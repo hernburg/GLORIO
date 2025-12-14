@@ -21,6 +21,7 @@ import 'data/models/ingredient.dart';
 import 'data/models/assembled_product.dart';
 import 'data/models/materialitem.dart';
 import 'data/models/supply.dart';
+import 'data/models/supply_item.dart';
 import 'data/models/sale.dart';  // ← если будет SaleAdapter
 import 'data/models/sold_ingredient.dart';
 
@@ -34,6 +35,7 @@ void main() async {
   Hive.registerAdapter(AssembledProductAdapter());
   Hive.registerAdapter(MaterialItemAdapter());
   Hive.registerAdapter(SupplyAdapter());
+  Hive.registerAdapter(SupplyItemAdapter());
   Hive.registerAdapter(SaleAdapter());
   Hive.registerAdapter(SoldIngredientAdapter());
 
@@ -41,7 +43,7 @@ void main() async {
   final authRepo = AuthRepo();
   final materialsRepo = MaterialsRepo();
   final showcaseRepo = ShowcaseRepo();
-  final supplyRepo = SupplyRepository();
+  final supplyRepo = SupplyRepository(materialsRepo);
   final clientsRepo = ClientsRepo();
   final salesRepo = SalesRepo();
   final writeoffRepo = WriteoffRepository();
