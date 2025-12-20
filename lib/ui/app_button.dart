@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../design/glorio_colors.dart';
+import '../design/glorio_text.dart';
+import '../design/glorio_radius.dart';
 
 class AppButton extends StatelessWidget {
   final String text;
@@ -14,34 +17,22 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = primary
-        ? const Color(0xFFBFC9B8)
-        : Colors.white;
-
-    final textColor = primary
-        ? const Color(0xFF2E2E2E)
-        : const Color(0xFF2E2E2E);
+  final bgColor = primary ? GlorioColors.pale : GlorioColors.card;
+  final textColor = GlorioColors.textPrimary;
 
     return SizedBox(
       width: double.infinity,
-      height: 52,
+      height: 56,
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
           backgroundColor: bgColor,
           elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(GlorioRadius.pill),
           ),
         ),
-        child: Text(
-          text,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: textColor,
-          ),
-        ),
+        child: Text(text, style: GlorioText.heading.copyWith(color: textColor)),
       ),
     );
   }

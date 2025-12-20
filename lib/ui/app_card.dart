@@ -2,6 +2,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../design/glorio_colors.dart';
 import '../design/glorio_radius.dart';
+import '../design/glorio_shadows.dart';
+import '../design/glorio_spacing.dart';
 
 class AppCard extends StatelessWidget {
   final Widget child;
@@ -15,19 +17,13 @@ class AppCard extends StatelessWidget {
     final card = ClipRRect(
       borderRadius: BorderRadius.circular(GlorioRadius.card),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
         child: Container(
-          padding: padding ?? const EdgeInsets.all(12),
+          padding: padding ?? const EdgeInsets.all(GlorioSpacing.card),
           decoration: BoxDecoration(
-            color: GlorioColors.card.withAlpha(230),
+            color: GlorioColors.card,
             borderRadius: BorderRadius.circular(GlorioRadius.card),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.06),
-                blurRadius: 22,
-                offset: const Offset(0, 8),
-              ),
-            ],
+            boxShadow: GlorioShadows.card,
           ),
           child: child,
         ),

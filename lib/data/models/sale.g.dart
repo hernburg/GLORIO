@@ -24,6 +24,9 @@ class SaleAdapter extends TypeAdapter<Sale> {
       date: fields[4] as DateTime,
       ingredients: (fields[5] as List).cast<SoldIngredient>(),
       soldBy: fields[8] as String,
+      usedPoints: (fields[9] as num?)?.toInt() ?? 0,
+      finalTotal: (fields[10] as num?)?.toDouble(),
+      paymentMethod: (fields[11] as String?) ?? 'Наличные',
       clientId: fields[6] as String?,
       clientName: fields[7] as String?,
     );
@@ -32,7 +35,7 @@ class SaleAdapter extends TypeAdapter<Sale> {
   @override
   void write(BinaryWriter writer, Sale obj) {
     writer
-      ..writeByte(9)
+  ..writeByte(12)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -50,7 +53,13 @@ class SaleAdapter extends TypeAdapter<Sale> {
       ..writeByte(7)
       ..write(obj.clientName)
       ..writeByte(8)
-      ..write(obj.soldBy);
+    ..write(obj.soldBy)
+    ..writeByte(9)
+    ..write(obj.usedPoints)
+    ..writeByte(10)
+    ..write(obj.finalTotal)
+    ..writeByte(11)
+    ..write(obj.paymentMethod);
   }
 
   @override

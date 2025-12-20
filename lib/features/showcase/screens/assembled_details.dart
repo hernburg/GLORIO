@@ -11,6 +11,7 @@ import '../../../data/models/assembled_product.dart';
 import '../../../data/repositories/materials_repo.dart';
 import '../../../design/glorio_colors.dart';
 import '../../../design/glorio_spacing.dart';
+import '../../../design/glorio_text.dart';
 
 class AssembledDetailsScreen extends StatelessWidget {
   final AssembledProduct item;
@@ -37,17 +38,11 @@ class AssembledDetailsScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: GlorioColors.background,
-      appBar: AppBar(
+        appBar: AppBar(
         backgroundColor: GlorioColors.background,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xFF2E2E2E)),
-        title: const Text(
-          'Букет',
-          style: TextStyle(
-            color: Color(0xFF2E2E2E),
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        iconTheme: IconThemeData(color: GlorioColors.textPrimary),
+        title: Text('Букет', style: GlorioText.heading),
       ),
       body: ListView(
         padding: EdgeInsets.only(
@@ -61,10 +56,10 @@ class AssembledDetailsScreen extends StatelessWidget {
           AppCard(
             padding: EdgeInsets.zero,
             child: Container(
-              height: 180,
+                height: 180,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(14),
-                color: Colors.grey.shade200,
+                color: GlorioColors.cardAlt,
                 image: imageProvider != null
                     ? DecorationImage(
                         image: imageProvider,
@@ -74,10 +69,7 @@ class AssembledDetailsScreen extends StatelessWidget {
               ),
               alignment: Alignment.center,
               child: imageProvider == null
-                  ? const Text(
-                      'Без фото',
-                      style: TextStyle(color: Color(0xFF7A7A7A)),
-                    )
+                  ? Text('Без фото', style: GlorioText.muted)
                   : null,
             ),
           ),
@@ -89,40 +81,17 @@ class AssembledDetailsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  item.name,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF2E2E2E),
-                  ),
-                ),
+                Text(item.name, style: GlorioText.heading.copyWith(fontSize: 18)),
                 const SizedBox(height: 8),
-                Text(
-                  'Цена продажи: ${item.sellingPrice.toStringAsFixed(0)} ₽',
-                  style: const TextStyle(fontSize: 14),
-                ),
-                Text(
-                  'Себестоимость: ${item.costPrice.toStringAsFixed(0)} ₽',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Color(0xFF7A7A7A),
-                  ),
-                ),
+                Text('Цена продажи: ${item.sellingPrice.toStringAsFixed(0)} ₽', style: GlorioText.body),
+                Text('Себестоимость: ${item.costPrice.toStringAsFixed(0)} ₽', style: GlorioText.muted),
               ],
             ),
           ),
 
           const SizedBox(height: 24),
 
-          const Text(
-            'Состав',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF2E2E2E),
-            ),
-          ),
+          Text('Состав', style: GlorioText.heading),
 
           const SizedBox(height: 12),
 
@@ -139,26 +108,12 @@ class AssembledDetailsScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            material?.name ?? ing.materialKey,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          Text(
-                            '${ing.quantity} × ${ing.costPerUnit} ₽',
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: Color(0xFF7A7A7A),
-                            ),
-                          ),
+                          Text(material?.name ?? ing.materialKey, style: GlorioText.heading.copyWith(fontSize: 15)),
+                          Text('${ing.quantity} × ${ing.costPerUnit} ₽', style: GlorioText.muted),
                         ],
                       ),
                     ),
-                    Text(
-                      '${ing.totalCost.toStringAsFixed(0)} ₽',
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
+                    Text('${ing.totalCost.toStringAsFixed(0)} ₽', style: GlorioText.heading),
                   ],
                 ),
               ),

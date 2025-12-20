@@ -175,13 +175,12 @@ class _AssembleProductScreenState extends State<AssembleProductScreen> {
 
     return Scaffold(
       backgroundColor: GlorioColors.background,
-      floatingActionButton: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AddButton(onTap: _openIngredientSelector),
-          const SizedBox(height: 6),
-          const Text('Добавить ингредиент', style: TextStyle(fontSize: 12, color: Color(0xFF7A7A7A))),
-        ],
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewPadding.bottom + 96,
+          right: 6,
+        ),
+        child: AddButton(onTap: _openIngredientSelector),
       ),
       body: ListView(
         padding: EdgeInsets.only(
@@ -203,7 +202,7 @@ class _AssembleProductScreenState extends State<AssembleProductScreen> {
                   image: image != null ? DecorationImage(image: image, fit: BoxFit.cover) : null,
                 ),
                 alignment: Alignment.center,
-                child: image == null ? const Text('Загрузить фото', style: TextStyle(color: Color(0xFF7A7A7A))) : null,
+                child: image == null ? Text('Загрузить фото', style: GlorioText.muted) : null,
               ),
             ),
           ),
@@ -226,7 +225,7 @@ class _AssembleProductScreenState extends State<AssembleProductScreen> {
 
           const SizedBox(height: 24),
 
-          const Text('Ингредиенты', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          Text('Ингредиенты', style: GlorioText.heading),
           const SizedBox(height: GlorioSpacing.gapSmall),
 
           if (ingredients.isEmpty) const Text('Ингредиенты не добавлены', style: GlorioText.muted),
@@ -260,8 +259,8 @@ class _AssembleProductScreenState extends State<AssembleProductScreen> {
           const SizedBox(height: 80),
         ],
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(12),
+      bottomNavigationBar: SafeArea(
+        minimum: const EdgeInsets.only(left: 12, right: 12, bottom: 18, top: 10),
         child: AppButton(text: 'Сохранить букет', onTap: _saveProduct),
       ),
     );

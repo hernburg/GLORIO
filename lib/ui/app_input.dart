@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../design/glorio_colors.dart';
+import '../design/glorio_radius.dart';
+import '../design/glorio_spacing.dart';
 
 class AppInput extends StatelessWidget {
   final TextEditingController controller;
@@ -29,13 +32,12 @@ class AppInput extends StatelessWidget {
         hintText: hint,
         errorText: errorText,
         filled: true,
-        fillColor: Colors.white,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        border: _border(const Color(0xFFD8D2C8)),
-        enabledBorder: _border(const Color(0xFFD8D2C8)),
+        fillColor: GlorioColors.card,
+  contentPadding: const EdgeInsets.symmetric(horizontal: GlorioSpacing.card, vertical: 14),
+        border: _border(GlorioColors.border),
+        enabledBorder: _border(GlorioColors.border),
         focusedBorder: _border(
-          const Color(0xFFBFC9B8),
+          GlorioColors.pale,
           width: 1.5,
         ),
       ),
@@ -44,7 +46,7 @@ class AppInput extends StatelessWidget {
 
   OutlineInputBorder _border(Color color, {double width = 1}) {
     return OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
+  borderRadius: BorderRadius.circular(GlorioRadius.card),
       borderSide: BorderSide(color: color, width: width),
     );
   }

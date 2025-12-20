@@ -42,7 +42,7 @@ class _RelativeFormDialogState extends State<RelativeFormDialog> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
-              'Добавить близкого',
+              'Добавить событие',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -54,7 +54,7 @@ class _RelativeFormDialogState extends State<RelativeFormDialog> {
             TextField(
               controller: nameCtrl,
               decoration: const InputDecoration(
-                labelText: 'Имя',
+                labelText: 'Название события',
               ),
             ),
 
@@ -63,14 +63,14 @@ class _RelativeFormDialogState extends State<RelativeFormDialog> {
             TextField(
               controller: birthdayCtrl,
               decoration: const InputDecoration(
-                labelText: 'Дата рождения (дд.мм.гггг)',
+                labelText: 'Дата события (дд.мм.гггг)',
               ),
             ),
 
             const SizedBox(height: 24),
 
             AppButton(
-              text: 'Добавить',
+              text: 'Добавить событие',
               onTap: submit,
             ),
 

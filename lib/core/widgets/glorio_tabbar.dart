@@ -2,7 +2,8 @@ import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../design/glorio_colors.dart';
-import '../../design/glorio_radius.dart';
+import '../../design/glorio_shadows.dart';
+// unused import removed
 
 class GlorioTabBar extends StatefulWidget {
   final int currentIndex;
@@ -92,23 +93,17 @@ class _GlorioTabBarState extends State<GlorioTabBar>
               filter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
 
               /// 🧊 СТЕКЛО (без собственного фона)
-              child: Container(
+                child: Container(
                 height: 64,
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
-                  color: Colors.white.withAlpha((0.08 * 255).round()),
+                  color: GlorioColors.card.withAlpha((0.08 * 255).round()),
                   borderRadius: BorderRadius.circular(28),
                   border: Border.all(
-                    color: Colors.white.withAlpha((0.35 * 255).round()),
+                    color: GlorioColors.border.withAlpha((0.35 * 255).round()),
                     width: 1.1,
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withAlpha((0.05 * 255).round()),
-                      blurRadius: 18,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
+                  boxShadow: GlorioShadows.card,
                 ),
                 child: Stack(
                   alignment: Alignment.center,
@@ -141,13 +136,13 @@ class _GlorioTabBarState extends State<GlorioTabBar>
                                       begin: Alignment.topLeft,
                                       end: Alignment.bottomRight,
                                         colors: [
-                                        Colors.white.withAlpha((0.55 * 255).round()),
-                                        const Color(0xFFF6E6EB).withAlpha((0.30 * 255).round()),
-                                        Colors.white.withAlpha((0.35 * 255).round()),
-                                      ],
+                                          GlorioColors.card.withAlpha((0.55 * 255).round()),
+                                          GlorioColors.cardAlt.withAlpha((0.30 * 255).round()),
+                                          GlorioColors.card.withAlpha((0.35 * 255).round()),
+                                        ],
                                     ),
-                                    border: Border.all(
-                                      color: Colors.white.withValues(alpha: 0.45),
+                                      border: Border.all(
+                                      color: GlorioColors.border.withAlpha((0.45 * 255).round()),
                                       width: 1.4,
                                     ),
                                   ),
@@ -214,8 +209,8 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeColor = const Color(0xFF8B95A0);
-    final inactiveColor = Colors.grey.shade500;
+  final activeColor = GlorioColors.accent;
+  final inactiveColor = GlorioColors.textMuted;
 
     return InkWell(
       borderRadius: BorderRadius.circular(22),

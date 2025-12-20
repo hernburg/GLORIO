@@ -37,12 +37,20 @@ class Client {
   @HiveField(4)
   final List<Relative> relatives;
 
+  @HiveField(5)
+  final double cashbackPercent;
+
+  @HiveField(6)
+  final int pointsBalance;
+
   Client({
     required this.id,
     required this.name,
     required this.phone,
     this.birthday,
     this.relatives = const [],
+    this.cashbackPercent = 0,
+    this.pointsBalance = 0,
   });
 
   Client copyWith({
@@ -50,6 +58,8 @@ class Client {
     String? phone,
     String? birthday,
     List<Relative>? relatives,
+    double? cashbackPercent,
+    int? pointsBalance,
   }) {
     return Client(
       id: id,
@@ -57,6 +67,8 @@ class Client {
       phone: phone ?? this.phone,
       birthday: birthday ?? this.birthday,
       relatives: relatives ?? this.relatives,
+      cashbackPercent: cashbackPercent ?? this.cashbackPercent,
+      pointsBalance: pointsBalance ?? this.pointsBalance,
     );
   }
 }

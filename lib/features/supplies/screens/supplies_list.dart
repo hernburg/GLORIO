@@ -10,6 +10,7 @@ import '../../../data/repositories/materials_repo.dart';
 import '../../../ui/app_card.dart';
 import '../../../ui/add_button.dart';
 import '../../../design/glorio_colors.dart';
+import '../../../design/glorio_text.dart';
 import '../../../design/glorio_spacing.dart';
 import '../../../design/glorio_radius.dart';
 
@@ -35,17 +36,23 @@ class _SuppliesListScreenState extends State<SuppliesListScreen> {
     final supplies = repo.supplies;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F3EE),
-      floatingActionButton: AddButton(
-        onTap: () => context.push('/supplies/new'),
+      backgroundColor: GlorioColors.background,
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewPadding.bottom + 96,
+          right: 6,
+        ),
+        child: AddButton(
+          onTap: () => context.push('/supplies/new'),
+        ),
       ),
       body: Padding(
                 padding: EdgeInsets.only(
-          left: GlorioSpacing.page,
-          right: GlorioSpacing.page,
-          top: MediaQuery.of(context).viewPadding.top + GlorioSpacing.page,
-          bottom: GlorioSpacing.page,
-        ),
+                  left: GlorioSpacing.page,
+                  right: GlorioSpacing.page,
+                  top: MediaQuery.of(context).viewPadding.top + GlorioSpacing.page,
+                  bottom: MediaQuery.of(context).viewPadding.bottom + GlorioSpacing.page,
+                ),
         child: Column(
           children: [
             // Tabs: match the style used in SalesListScreen (blurred background + two buttons)
@@ -61,7 +68,7 @@ class _SuppliesListScreenState extends State<SuppliesListScreen> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(GlorioRadius.large),
                         border: Border.all(color: GlorioColors.border),
-                        color: GlorioColors.card.withOpacity(0.6),
+                        color: GlorioColors.card.withAlpha((0.6 * 255).round()),
                       ),
                       child: Row(
                         children: [
@@ -85,6 +92,7 @@ class _SuppliesListScreenState extends State<SuppliesListScreen> {
               child: ValueListenableBuilder<int>(
                 valueListenable: tab,
                 builder: (context, value, _) {
+                  final isUsedTab = value == 1;
                   final filtered = supplies.where((s) {
                     final used = s.totalQuantity <= 0;
                     return value == 0 ? !used : used;
@@ -131,22 +139,12 @@ class _SuppliesListScreenState extends State<SuppliesListScreen> {
                             const SizedBox(height: 8),
                             Text(
                               'Поставка от ${_formatDate(supply.date)}',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF2E2E2E),
-                              ),
+                              style: GlorioText.heading,
                             ),
 
                             const SizedBox(height: 6),
 
-                            Text(
-                              'Позиций: ${supply.items.length}',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF2E2E2E),
-                              ),
-                            ),
+                            Text('Позиций: ${supply.items.length}', style: GlorioText.body),
 
                             const SizedBox(height: 4),
 
@@ -156,20 +154,8 @@ class _SuppliesListScreenState extends State<SuppliesListScreen> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        'Единиц всего: ${supply.totalQuantity.toStringAsFixed(0)}',
-                                        style: const TextStyle(
-                                          fontSize: 13,
-                                          color: Color(0xFF7A7A7A),
-                                        ),
-                                      ),
-                                      Text(
-                                        'На складе: ${inStock.toStringAsFixed(0)}',
-                                        style: const TextStyle(
-                                          fontSize: 13,
-                                          color: Color(0xFF7A7A7A),
-                                        ),
-                                      ),
+                                      Text('Единиц всего: ${supply.totalQuantity.toStringAsFixed(0)}', style: GlorioText.muted),
+                                      Text('На складе: ${inStock.toStringAsFixed(0)}', style: GlorioText.muted),
                                     ],
                                   ),
                                 ),
@@ -177,20 +163,8 @@ class _SuppliesListScreenState extends State<SuppliesListScreen> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        'В букете: ${inBouquets.toStringAsFixed(0)}',
-                                        style: const TextStyle(
-                                          fontSize: 13,
-                                          color: Color(0xFF7A7A7A),
-                                        ),
-                                      ),
-                                      Text(
-                                        'Продано: ${soldFromSupply.toStringAsFixed(0)}',
-                                        style: const TextStyle(
-                                          fontSize: 13,
-                                          color: Color(0xFF7A7A7A),
-                                        ),
-                                      ),
+                                      Text('В букете: ${inBouquets.toStringAsFixed(0)}', style: GlorioText.muted),
+                                      Text('Продано: ${soldFromSupply.toStringAsFixed(0)}', style: GlorioText.muted),
                                     ],
                                   ),
                                 ),
@@ -199,27 +173,25 @@ class _SuppliesListScreenState extends State<SuppliesListScreen> {
 
                             Text(
                               'Сумма закупки: ${supply.totalCost.toStringAsFixed(0)} ₽',
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: Color(0xFF7A7A7A),
-                              ),
+                              style: GlorioText.muted,
                             ),
 
                             const SizedBox(height: 12),
 
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: IconButton(
-                                icon: const Icon(
-                                  Icons.edit_outlined,
-                                  color: Color(0xFF7A7A7A),
+                            if (!isUsedTab)
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: IconButton(
+                                  icon: Icon(
+                                    Icons.edit_outlined,
+                                    color: GlorioColors.textMuted,
+                                  ),
+                                  tooltip: 'Редактировать',
+                                  onPressed: () {
+                                    context.push('/supplies/edit/${supply.id}');
+                                  },
                                 ),
-                                tooltip: 'Редактировать',
-                                onPressed: () {
-                                  context.push('/supplies/edit/${supply.id}');
-                                },
                               ),
-                            ),
                           ],
                         ),
                       );
@@ -272,15 +244,12 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        'Нет поставок\nНажмите +, чтобы добавить',
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: 16,
-          color: Color(0xFF7A7A7A),
-        ),
-      ),
+    return Center(
+                  child: Text(
+                  'Нет поставок\nНажмите +, чтобы добавить',
+                  textAlign: TextAlign.center,
+                  style: GlorioText.muted,
+                ),
     );
   }
 }

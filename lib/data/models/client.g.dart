@@ -61,14 +61,16 @@ class ClientAdapter extends TypeAdapter<Client> {
       name: fields[1] as String,
       phone: fields[2] as String,
       birthday: fields[3] as String?,
-      relatives: (fields[4] as List).cast<Relative>(),
+      relatives: (fields[4] as List?)?.cast<Relative>() ?? const [],
+      cashbackPercent: (fields[5] as num?)?.toDouble() ?? 0,
+      pointsBalance: (fields[6] as num?)?.toInt() ?? 0,
     );
   }
 
   @override
   void write(BinaryWriter writer, Client obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -78,7 +80,11 @@ class ClientAdapter extends TypeAdapter<Client> {
       ..writeByte(3)
       ..write(obj.birthday)
       ..writeByte(4)
-      ..write(obj.relatives);
+      ..write(obj.relatives)
+      ..writeByte(5)
+      ..write(obj.cashbackPercent)
+      ..writeByte(6)
+      ..write(obj.pointsBalance);
   }
 
   @override

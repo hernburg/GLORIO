@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_input.dart';
+import '../../../ui/app_card.dart';
+import '../../../design/glorio_spacing.dart';
+import '../../../design/glorio_text.dart';
+import '../../../design/glorio_colors.dart';
 import '../../../data/models/supply_item.dart';
+import '../../../data/models/category.dart';
+import '../../../data/repositories/category_repo.dart';
 
 class SupplyItemEditor extends StatefulWidget {
   const SupplyItemEditor({super.key});
@@ -12,27 +19,87 @@ class SupplyItemEditor extends StatefulWidget {
 
 class _SupplyItemEditorState extends State<SupplyItemEditor> {
   final nameCtrl = TextEditingController();
-  final categoryIdCtrl = TextEditingController();
-  final categoryNameCtrl = TextEditingController();
   final qtyCtrl = TextEditingController();
   final costCtrl = TextEditingController();
+
+  Category? _selectedCategory;
 
   String? error;
 
   @override
   void dispose() {
     nameCtrl.dispose();
-    categoryIdCtrl.dispose();
-    categoryNameCtrl.dispose();
     qtyCtrl.dispose();
     costCtrl.dispose();
     super.dispose();
   }
 
+  Future<void> _pickCategory() async {
+    final repo = context.read<CategoryRepo>();
+    final categories = repo.categories..sort((a, b) => a.name.compareTo(b.name));
+
+    final result = await showModalBottomSheet<Category>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) {
+        final controller = TextEditingController();
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: GlorioSpacing.page,
+              right: GlorioSpacing.page,
+              top: GlorioSpacing.page,
+              bottom: GlorioSpacing.page + MediaQuery.of(ctx).viewInsets.bottom,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Категория', style: GlorioText.heading),
+                const SizedBox(height: GlorioSpacing.gapSmall),
+                Flexible(
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: categories.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    itemBuilder: (_, i) {
+                      final cat = categories[i];
+                      return AppCard(
+                        onTap: () => Navigator.pop(ctx, cat),
+                        child: Text(cat.name, style: GlorioText.body),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: GlorioSpacing.gap),
+                AppInput(
+                  controller: controller,
+                  hint: 'Новая категория',
+                ),
+                const SizedBox(height: GlorioSpacing.gapSmall),
+                AppButton(
+                  text: 'Создать и выбрать',
+                  onTap: () {
+                    final name = controller.text.trim();
+                    if (name.isEmpty) return;
+                    final created = repo.addCategory(name);
+                    Navigator.pop(ctx, created);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (result != null) {
+      setState(() => _selectedCategory = result);
+    }
+  }
+
   void _submit() {
     final name = nameCtrl.text.trim();
-    final categoryId = categoryIdCtrl.text.trim();
-    final categoryName = categoryNameCtrl.text.trim();
+    final category = _selectedCategory;
 
     final qty = double.tryParse(qtyCtrl.text.replaceAll(',', '.'));
     final cost = double.tryParse(costCtrl.text.replaceAll(',', '.'));
@@ -41,8 +108,8 @@ class _SupplyItemEditorState extends State<SupplyItemEditor> {
       setState(() => error = 'Введите название');
       return;
     }
-    if (categoryId.isEmpty || categoryName.isEmpty) {
-      setState(() => error = 'Введите категорию');
+    if (category == null) {
+      setState(() => error = 'Выберите категорию');
       return;
     }
     if (qty == null || qty <= 0) {
@@ -54,13 +121,13 @@ class _SupplyItemEditorState extends State<SupplyItemEditor> {
       return;
     }
 
-    final materialKey = '${name}_$categoryId';
+    final materialKey = '${name}_${category.id}';
 
     final item = SupplyItem(
       materialKey: materialKey,
       name: name,
-      categoryId: categoryId,
-      categoryName: categoryName,
+      categoryId: category.id,
+      categoryName: category.name,
       quantity: qty,
       costPerUnit: cost,
     );
@@ -73,35 +140,39 @@ class _SupplyItemEditorState extends State<SupplyItemEditor> {
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.only(
-          left: 16,
-          right: 16,
-          top: 16,
-          bottom: 16 + MediaQuery.of(context).viewInsets.bottom,
+          left: GlorioSpacing.page,
+          right: GlorioSpacing.page,
+          top: GlorioSpacing.page,
+          bottom: GlorioSpacing.page + MediaQuery.of(context).viewInsets.bottom,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              'Новая позиция',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 16),
+            Text('Новая позиция', style: GlorioText.heading),
+            const SizedBox(height: GlorioSpacing.gap),
 
             AppInput(
               controller: nameCtrl,
               hint: 'Название (например: Роза Эквадор)',
             ),
             const SizedBox(height: 12),
-
-            AppInput(
-              controller: categoryIdCtrl,
-              hint: 'Категория ID (например: flowers)',
-            ),
-            const SizedBox(height: 12),
-
-            AppInput(
-              controller: categoryNameCtrl,
-              hint: 'Категория (например: Цветы)',
+            GestureDetector(
+              onTap: _pickCategory,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: GlorioColors.card,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: GlorioColors.border),
+                ),
+                child: Text(
+                  _selectedCategory?.name ?? 'Выберите категорию',
+                  style: _selectedCategory == null
+                      ? GlorioText.muted
+                      : GlorioText.body,
+                ),
+              ),
             ),
             const SizedBox(height: 12),
 
@@ -119,8 +190,8 @@ class _SupplyItemEditorState extends State<SupplyItemEditor> {
             ),
 
             if (error != null) ...[
-              const SizedBox(height: 10),
-              Text(error!, style: const TextStyle(color: Colors.red)),
+              SizedBox(height: GlorioSpacing.gapSmall),
+              Text(error!, style: GlorioText.body.copyWith(color: GlorioColors.warning)),
             ],
 
             const SizedBox(height: 16),

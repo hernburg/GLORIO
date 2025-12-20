@@ -10,6 +10,7 @@ import '../../../ui/app_button.dart';
 import '../widgets/supply_item_editor.dart';
 import '../../../design/glorio_colors.dart';
 import '../../../design/glorio_spacing.dart';
+import '../../../design/glorio_text.dart';
 
 class SupplyCreateScreen extends StatefulWidget {
   final String? editId;
@@ -88,7 +89,7 @@ class _SupplyCreateScreenState extends State<SupplyCreateScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: GlorioColors.background,
-      appBar: AppBar(backgroundColor: GlorioColors.background, title: const Text('Новая поставка')),
+  appBar: AppBar(backgroundColor: GlorioColors.background, title: Text('Новая поставка', style: GlorioText.heading)),
       body: ListView(
           padding: EdgeInsets.only(
             left: GlorioSpacing.page,
@@ -100,11 +101,7 @@ class _SupplyCreateScreenState extends State<SupplyCreateScreen> {
           // -------------------------------------------------
           // POSITIONS
           // -------------------------------------------------
-          if (items.isEmpty)
-            const Text(
-              'Позиции не добавлены',
-              style: TextStyle(color: Color(0xFF7A7A7A)),
-            ),
+          if (items.isEmpty) Text('Позиции не добавлены', style: GlorioText.muted),
 
           ...items.map(
             (i) => Padding(
@@ -113,18 +110,9 @@ class _SupplyCreateScreenState extends State<SupplyCreateScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      i.name,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
+                    Text(i.name, style: GlorioText.heading),
                     const SizedBox(height: 4),
-                    Text(
-                      '${i.categoryName} • ${i.quantity} × ${i.costPerUnit} ₽',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF7A7A7A),
-                      ),
-                    ),
+                    Text('${i.categoryName} • ${i.quantity} × ${i.costPerUnit} ₽', style: GlorioText.muted),
                   ],
                 ),
               ),

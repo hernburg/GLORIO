@@ -8,6 +8,9 @@ import '../../../data/repositories/supply_repo.dart';
 import '../../../ui/app_card.dart';
 import '../../../ui/app_input.dart';
 import '../../../ui/app_button.dart';
+import '../../../design/glorio_colors.dart';
+import '../../../design/glorio_text.dart';
+import '../../../design/glorio_spacing.dart';
 
 class IngredientSelector extends StatefulWidget {
   final List<MaterialItem> materials;
@@ -162,34 +165,29 @@ class _IngredientSelectorState extends State<IngredientSelector> {
 
     return SafeArea(
       child: Container(
-        color: const Color(0xFFF6F3EE),
+        color: GlorioColors.background,
+        padding: const EdgeInsets.only(top: GlorioSpacing.page),
         child: Column(
           children: [
-            const SizedBox(height: 10),
+            const SizedBox(height: 6),
 
             Container(
               width: 40,
               height: 5,
               decoration: BoxDecoration(
-                color: const Color(0xFFD8D2C8),
+                color: GlorioColors.border,
                 borderRadius: BorderRadius.circular(20),
               ),
             ),
 
             const SizedBox(height: 16),
 
-            const Text(
-              'Выбор ингредиента',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            Text('Выбор ингредиента', style: GlorioText.heading),
 
             const SizedBox(height: 12),
 
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: GlorioSpacing.page),
               child: AppInput(
                 controller: searchCtrl,
                 hint: 'Поиск по названию или категории',
@@ -200,7 +198,7 @@ class _IngredientSelectorState extends State<IngredientSelector> {
 
             Expanded(
               child: ListView.separated(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(GlorioSpacing.page),
                 itemCount: filtered.length,
                 separatorBuilder: (_, __) =>
                     const SizedBox(height: 8),
@@ -252,21 +250,9 @@ class _IngredientSelectorState extends State<IngredientSelector> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          m.name,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                        Text(m.name, style: GlorioText.heading.copyWith(fontSize: 15)),
                         const SizedBox(height: 2),
-                        Text(
-                          m.categoryName,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Color(0xFF7A7A7A),
-                          ),
-                        ),
+                        Text(m.categoryName, style: GlorioText.muted),
                       ],
                     ),
                   );

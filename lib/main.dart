@@ -24,12 +24,16 @@ import 'data/models/supply.dart';
 import 'data/models/supply_item.dart';
 import 'data/models/sale.dart';  // ← если будет SaleAdapter
 import 'data/models/sold_ingredient.dart';
+import 'data/models/category.dart';
+import 'data/repositories/category_repo.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
 
   // ------ РЕГИСТРАЦИЯ АДАПТЕРОВ ------
+  Hive.registerAdapter(RelativeAdapter());
+  Hive.registerAdapter(RelativeAdapter());
   Hive.registerAdapter(ClientAdapter());
   Hive.registerAdapter(IngredientAdapter());
   Hive.registerAdapter(AssembledProductAdapter());
@@ -38,10 +42,12 @@ void main() async {
   Hive.registerAdapter(SupplyItemAdapter());
   Hive.registerAdapter(SaleAdapter());
   Hive.registerAdapter(SoldIngredientAdapter());
+  Hive.registerAdapter(CategoryAdapter());
 
   // ------ СОЗДАЕМ ЕДИНСТВЕННЫЕ ИНСТАНСЫ ------
   final authRepo = AuthRepo();
   final materialsRepo = MaterialsRepo();
+  final categoryRepo = CategoryRepo();
   final showcaseRepo = ShowcaseRepo();
   final supplyRepo = SupplyRepository(materialsRepo);
   final clientsRepo = ClientsRepo();
@@ -53,6 +59,7 @@ void main() async {
 
   // ------ ИНИЦИАЛИЗАЦИЯ ------
   await materialsRepo.init();
+  await categoryRepo.init();
   await showcaseRepo.init();
   await supplyRepo.init();
   await clientsRepo.init();
@@ -67,6 +74,7 @@ void main() async {
         Provider.value(value: appRouter),
 
         ChangeNotifierProvider.value(value: materialsRepo),
+  ChangeNotifierProvider.value(value: categoryRepo),
         ChangeNotifierProvider.value(value: showcaseRepo),
         ChangeNotifierProvider.value(value: supplyRepo),
         ChangeNotifierProvider.value(value: clientsRepo),

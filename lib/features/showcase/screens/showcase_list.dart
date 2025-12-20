@@ -6,15 +6,18 @@ import '../../../ui/app_card.dart';
 import '../../../ui/add_button.dart';
 import '../../../design/glorio_colors.dart';
 import '../../../design/glorio_spacing.dart';
+import '../../../design/glorio_text.dart';
 
 import '../../../data/models/assembled_product.dart';
 import '../../../data/models/sale.dart';
 import '../../../data/models/sold_ingredient.dart';
+import '../../../data/models/client.dart';
 
 import '../../../data/repositories/showcase_repo.dart';
 import '../../../data/repositories/sales_repo.dart';
 import '../../../data/repositories/materials_repo.dart';
 import '../../../data/repositories/auth_repo.dart';
+import '../../../data/repositories/clients_repo.dart';
 
 import '../../sales/widgets/client_selector.dart';
 
@@ -30,8 +33,14 @@ class ShowcaseListScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: GlorioColors.background,
-      floatingActionButton: AddButton(
-        onTap: () => router.push('/assemble'),
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewPadding.bottom + 96,
+          right: 6,
+        ),
+        child: AddButton(
+          onTap: () => router.push('/assemble'),
+        ),
       ),
       body: items.isEmpty
           ? Center(
@@ -41,13 +50,10 @@ class ShowcaseListScreen extends StatelessWidget {
                   right: GlorioSpacing.page,
                   top: MediaQuery.of(context).viewPadding.top + GlorioSpacing.page,
                 ),
-                child: const Text(
+                child: Text(
                   'Пока витрина пуста\nНажмите +, чтобы собрать букет',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFF7A7A7A),
-                  ),
+                  style: GlorioText.muted,
                 ),
               ),
             )
@@ -56,7 +62,7 @@ class ShowcaseListScreen extends StatelessWidget {
                 left: GlorioSpacing.page,
                 right: GlorioSpacing.page,
                 top: MediaQuery.of(context).viewPadding.top + GlorioSpacing.page,
-                bottom: GlorioSpacing.page,
+                bottom: MediaQuery.of(context).viewPadding.bottom + GlorioSpacing.page,
               ),
               itemCount: items.length,
               separatorBuilder: (_, __) => const SizedBox(height: 12),
@@ -97,11 +103,7 @@ class _ShowcaseCard extends StatelessWidget {
           /// Название
           Text(
             item.name,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF2E2E2E),
-            ),
+            style: GlorioText.heading,
           ),
 
           const SizedBox(height: 6),
@@ -109,33 +111,15 @@ class _ShowcaseCard extends StatelessWidget {
           /// Цена и себестоимость
           Row(
             children: [
-              Text(
-                'Цена: ${item.sellingPrice.toStringAsFixed(0)} ₽',
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF2E2E2E),
-                ),
-              ),
+              Text('Цена: ${item.sellingPrice.toStringAsFixed(0)} ₽', style: GlorioText.body),
               const SizedBox(width: 12),
-              Text(
-                'Себест.: ${item.costPrice.toStringAsFixed(0)} ₽',
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: Color(0xFF7A7A7A),
-                ),
-              ),
+              Text('Себест.: ${item.costPrice.toStringAsFixed(0)} ₽', style: GlorioText.muted),
             ],
           ),
 
           if (isBroken) ...[
-            const SizedBox(height: 6),
-            const Text(
-              'Требует корректировки состава',
-              style: TextStyle(
-                fontSize: 13,
-                color: Colors.redAccent,
-              ),
-            ),
+            SizedBox(height: GlorioSpacing.gapSmall),
+            Text('Требует корректировки состава', style: GlorioText.muted.copyWith(color: GlorioColors.accent)),
           ],
 
           const SizedBox(height: 12),
@@ -177,14 +161,32 @@ class _ShowcaseCard extends StatelessWidget {
     final salesRepo = context.read<SalesRepo>();
     final materialsRepo = context.read<MaterialsRepo>();
     final authRepo = context.read<AuthRepo>();
+  final clientsRepo = context.read<ClientsRepo>();
 
   // Capture messenger before awaiting UI operations to avoid using context after await
   final messenger = ScaffoldMessenger.of(context);
 
   final selection = await pickClient(context);
   if (selection == null) return;
+  if (!context.mounted) return;
 
   final client = selection.withoutClient ? null : selection.client;
+
+  int usedPoints = 0;
+  double finalTotal = item.sellingPrice;
+  int earnedPoints = 0;
+
+  if (client != null) {
+    usedPoints = await _askUsedPoints(context, client) ?? 0;
+    usedPoints = usedPoints.clamp(0, client.pointsBalance);
+    finalTotal = (item.sellingPrice - usedPoints).clamp(0, double.infinity);
+    earnedPoints = (finalTotal * client.cashbackPercent / 100).floor();
+
+    final updatedClient = client.copyWith(
+      pointsBalance: client.pointsBalance - usedPoints + earnedPoints,
+    );
+    clientsRepo.updateClient(updatedClient);
+  }
 
     final sale = Sale(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -195,6 +197,9 @@ class _ShowcaseCard extends StatelessWidget {
       clientId: client?.id,
       clientName: client?.name,
       soldBy: authRepo.currentUserLogin,
+      usedPoints: usedPoints,
+      finalTotal: finalTotal,
+      paymentMethod: 'Наличные',
       ingredients: item.ingredients.map((ing) {
         final material = materialsRepo.getByKey(ing.materialKey);
         return SoldIngredient(
@@ -212,6 +217,39 @@ class _ShowcaseCard extends StatelessWidget {
     // Show snackbar using messenger captured before await
     messenger.showSnackBar(
       const SnackBar(content: Text('\u0411\u0443\u043a\u0435\u0442 \u043f\u0440\u043e\u0434\u0430\u043d')),
+    );
+  }
+
+  Future<int?> _askUsedPoints(BuildContext context, Client client) async {
+    final ctrl = TextEditingController(text: '0');
+
+    return showDialog<int>(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Списать баллы'),
+          content: TextField(
+            controller: ctrl,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: 'Доступно: ${client.pointsBalance}',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Отмена'),
+            ),
+            TextButton(
+              onPressed: () {
+                final value = int.tryParse(ctrl.text.trim()) ?? 0;
+                Navigator.pop(ctx, value);
+              },
+              child: const Text('Применить'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -233,7 +271,7 @@ class _ActionIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      icon: Icon(icon, color: const Color(0xFF7A7A7A)),
+      icon: Icon(icon, color: GlorioColors.textMuted),
       tooltip: tooltip,
       onPressed: onTap,
     );

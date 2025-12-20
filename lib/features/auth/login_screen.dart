@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../data/repositories/auth_repo.dart';
 import '../../../design/glorio_colors.dart';
 import '../../../design/glorio_spacing.dart';
+import '../../../design/glorio_text.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -42,10 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'GLORIO',
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-              ),
+              Text('GLORIO', style: GlorioText.heading.copyWith(fontSize: 32)),
               const SizedBox(height: 24),
 
               TextField(
@@ -62,7 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
               if (errorText != null) ...[
                 const SizedBox(height: 12),
-                Text(errorText!, style: const TextStyle(color: Colors.red)),
+                Text(errorText!, style: GlorioText.body.copyWith(color: GlorioColors.warning)),
               ],
 
               const SizedBox(height: 24),

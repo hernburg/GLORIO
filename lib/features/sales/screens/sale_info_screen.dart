@@ -43,7 +43,9 @@ class SaleInfoScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Text('Цена за единицу: ${sale.price.toStringAsFixed(0)} ₽'),
             Text('Количество: ${sale.quantity}'),
-            Text('Итого: ${sale.total.toStringAsFixed(0)} ₽'),
+            Text('Итого (после баллов): ${sale.total.toStringAsFixed(0)} ₽'),
+            Text('Списано баллов: ${sale.usedPoints}'),
+            Text('Способ оплаты: ${sale.paymentMethod}'),
             const SizedBox(height: 8),
             Text(
               'Дата: ${sale.date.day}.${sale.date.month}.${sale.date.year}',

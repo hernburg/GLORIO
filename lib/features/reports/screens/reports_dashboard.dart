@@ -9,6 +9,7 @@ import '../../../data/repositories/showcase_repo.dart';
 import '../../../data/repositories/supply_repo.dart';
 import '../../../design/glorio_colors.dart';
 import '../../../design/glorio_spacing.dart';
+import '../../../design/glorio_text.dart';
 
 class ReportsDashboard extends StatelessWidget {
   const ReportsDashboard({super.key});
@@ -53,13 +54,7 @@ class ReportsDashboard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Итог',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                Text('Итог', style: GlorioText.heading),
                 const SizedBox(height: 12),
 
                 _MetricRow(
@@ -89,13 +84,7 @@ class ReportsDashboard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Продажи',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                Text('Продажи', style: GlorioText.heading),
                 const SizedBox(height: 12),
 
                 _MetricRow(
@@ -119,13 +108,7 @@ class ReportsDashboard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Склад',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                Text('Склад', style: GlorioText.heading),
                 const SizedBox(height: 12),
 
                 _MetricRow(
@@ -178,23 +161,9 @@ class _MetricRow extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Color(0xFF7A7A7A),
-              ),
-            ),
+            child: Text(label, style: GlorioText.muted),
           ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: isPrimary ? 18 : 14,
-              fontWeight:
-                  isPrimary ? FontWeight.w600 : FontWeight.w500,
-              color: const Color(0xFF2E2E2E),
-            ),
-          ),
+          Text(value, style: isPrimary ? GlorioText.heading : GlorioText.body),
         ],
       ),
     );

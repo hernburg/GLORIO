@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../widgets/liquid_navbar.dart';
 import '../../design/glorio_colors.dart';
 import '../../design/glorio_spacing.dart';
+import '../../design/glorio_text.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -23,15 +24,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'Система управления цветочным магазином',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF0D6B53),
+                Text(
+                  'Система управления цветочным магазином',
+                  textAlign: TextAlign.center,
+                  style: GlorioText.heading.copyWith(fontSize: 18, color: GlorioColors.accent),
                 ),
-              ),
             ],
           ),
         ),

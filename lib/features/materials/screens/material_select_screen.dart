@@ -4,6 +4,7 @@ import '../../../data/repositories/materials_repo.dart';
 import '../../../data/models/materialitem.dart';
 import '../../../design/glorio_colors.dart';
 import '../../../design/glorio_spacing.dart';
+import '../../../design/glorio_text.dart';
 
 class MaterialSelectScreen extends StatelessWidget {
   final Function(MaterialItem) onSelect;
@@ -19,11 +20,7 @@ class MaterialSelectScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: GlorioColors.background,
-      appBar: AppBar(
-        backgroundColor: GlorioColors.background,
-        title: const Text('Выбор материала'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(backgroundColor: GlorioColors.background, title: Text('Выбор материала', style: GlorioText.heading), centerTitle: true,),
       body: materials.isEmpty
           ? Center(
               child: Padding(
@@ -32,10 +29,7 @@ class MaterialSelectScreen extends StatelessWidget {
                   right: GlorioSpacing.page,
                   top: MediaQuery.of(context).viewPadding.top + GlorioSpacing.page,
                 ),
-                child: const Text(
-                  'Нет материалов на складе',
-                  style: TextStyle(fontSize: 18, color: Colors.grey),
-                ),
+                child: Text('Нет материалов на складе', style: GlorioText.muted.copyWith(fontSize: 18)),
               ),
             )
           : ListView.builder(
@@ -51,15 +45,11 @@ class MaterialSelectScreen extends StatelessWidget {
 
                 return ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: Colors.grey.shade300,
-                    child: m.photoUrl != null
-                        ? Image.network(m.photoUrl!)
-                        : const Icon(Icons.local_florist, color: Colors.grey),
+                    backgroundColor: GlorioColors.cardAlt,
+                    child: m.photoUrl != null ? Image.network(m.photoUrl!) : Icon(Icons.local_florist, color: GlorioColors.textMuted),
                   ),
-                  title: Text(m.name),
-                  subtitle: Text(
-                    'Остаток: ${m.quantity} • Себестоимость: ${m.costPerUnit} ₽',
-                  ),
+                  title: Text(m.name, style: GlorioText.body),
+                  subtitle: Text('Остаток: ${m.quantity} • Себестоимость: ${m.costPerUnit} ₽', style: GlorioText.muted),
                   onTap: () {
                     onSelect(m);
                     Navigator.pop(context);

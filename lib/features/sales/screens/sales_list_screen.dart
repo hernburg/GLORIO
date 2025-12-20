@@ -9,16 +9,20 @@ import '../../../ui/app_button.dart';
 import '../../../data/models/assembled_product.dart';
 import '../../../data/models/sale.dart';
 import '../../../data/models/sold_ingredient.dart';
+import '../../../data/models/client.dart';
 
 import '../../../data/repositories/showcase_repo.dart';
 import '../../../data/repositories/sales_repo.dart';
 import '../../../data/repositories/materials_repo.dart';
 import '../../../data/repositories/supply_repo.dart';
 import '../../../data/repositories/auth_repo.dart';
+import '../../../data/repositories/clients_repo.dart';
 
 import '../widgets/client_selector.dart';
 import '../../../design/glorio_colors.dart';
+import '../../../design/glorio_text.dart';
 import '../../../design/glorio_spacing.dart';
+import '../../../design/glorio_radius.dart';
 
 class SalesListScreen extends StatefulWidget {
   const SalesListScreen({super.key});
@@ -37,18 +41,22 @@ class _SalesListScreenState extends State<SalesListScreen> {
 
     return Scaffold(
       backgroundColor: GlorioColors.background,
-      body: Column(
-        children: [
-          SizedBox(height: MediaQuery.of(context).viewPadding.top + GlorioSpacing.page),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: GlorioSpacing.page),
-            child: _buildTabs(),
-          ),
-          const SizedBox(height: GlorioSpacing.gapSmall),
-          Expanded(
-            child: tabIndex == 0 ? _buildAvailable(showcase) : _buildSold(sales),
-          ),
-        ],
+      body: Padding(
+        padding: EdgeInsets.only(
+          left: GlorioSpacing.page,
+          right: GlorioSpacing.page,
+          top: MediaQuery.of(context).viewPadding.top + GlorioSpacing.page,
+          bottom: GlorioSpacing.page,
+        ),
+        child: Column(
+          children: [
+            _buildTabs(),
+            const SizedBox(height: GlorioSpacing.gapSmall),
+            Expanded(
+              child: tabIndex == 0 ? _buildAvailable(showcase) : _buildSold(sales),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -57,29 +65,26 @@ class _SalesListScreenState extends State<SalesListScreen> {
   // TABS
   // ---------------------------------------------------------------------------
   Widget _buildTabs() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: GlorioSpacing.page),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(22),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-            child: Container(
-            padding: const EdgeInsets.all(GlorioSpacing.card),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: GlorioColors.border),
-              color: GlorioColors.card.withAlpha((0.6 * 255).round()),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: _tabButton('В продаже', 0),
-                ),
-                Expanded(
-                  child: _tabButton('Продано', 1),
-                ),
-              ],
-            ),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(GlorioRadius.large),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: Container(
+          padding: const EdgeInsets.all(GlorioSpacing.card),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(GlorioRadius.large),
+            border: Border.all(color: GlorioColors.border),
+            color: GlorioColors.card.withAlpha((0.6 * 255).round()),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: _tabButton('В продаже', 0),
+              ),
+              Expanded(
+                child: _tabButton('Продано', 1),
+              ),
+            ],
           ),
         ),
       ),
@@ -90,7 +95,7 @@ class _SalesListScreenState extends State<SalesListScreen> {
     final active = tabIndex == index;
     return GestureDetector(
       onTap: () => setState(() => tabIndex = index),
-      child: Container(
+        child: Container(
         height: 36,
         alignment: Alignment.center,
         decoration: BoxDecoration(
@@ -114,15 +119,15 @@ class _SalesListScreenState extends State<SalesListScreen> {
   // ---------------------------------------------------------------------------
   Widget _buildAvailable(List<AssembledProduct> products) {
     if (products.isEmpty) {
-      return const Center(child: Text('На витрине пока пусто'));
+      return Center(child: Text('На витрине пока пусто', style: GlorioText.muted));
     }
 
     return ListView.separated(
       padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: MediaQuery.of(context).viewPadding.top + 16,
-        bottom: 16,
+        left: GlorioSpacing.page,
+        right: GlorioSpacing.page,
+        top: GlorioSpacing.page,
+        bottom: MediaQuery.of(context).viewPadding.bottom + GlorioSpacing.page,
       ),
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemCount: products.length,
@@ -133,12 +138,10 @@ class _SalesListScreenState extends State<SalesListScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(p.name,
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.w600)),
+        Text(p.name, style: GlorioText.heading),
               const SizedBox(height: 6),
-              Text('Себестоимость: ${p.costPrice.toStringAsFixed(0)} ₽'),
-              Text('Цена продажи: ${p.sellingPrice.toStringAsFixed(0)} ₽'),
+              Text('Себестоимость: ${p.costPrice.toStringAsFixed(0)} ₽', style: GlorioText.muted),
+              Text('Цена продажи: ${p.sellingPrice.toStringAsFixed(0)} ₽', style: GlorioText.body),
               const SizedBox(height: 12),
               Row(
                 children: [
@@ -169,15 +172,15 @@ class _SalesListScreenState extends State<SalesListScreen> {
   // ---------------------------------------------------------------------------
   Widget _buildSold(List<Sale> sales) {
     if (sales.isEmpty) {
-      return const Center(child: Text('Пока нет завершённых продаж'));
+      return Center(child: Text('Пока нет завершённых продаж', style: GlorioText.muted));
     }
 
     return ListView.separated(
       padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: MediaQuery.of(context).viewPadding.top + 16,
-        bottom: 16,
+        left: GlorioSpacing.page,
+        right: GlorioSpacing.page,
+        top: GlorioSpacing.page,
+        bottom: MediaQuery.of(context).viewPadding.bottom + GlorioSpacing.page,
       ),
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemCount: sales.length,
@@ -188,12 +191,9 @@ class _SalesListScreenState extends State<SalesListScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(s.product.name,
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.w600)),
-              Text('Итог: ${s.total.toStringAsFixed(0)} ₽'),
-              Text(
-                  'Дата: ${s.date.day}.${s.date.month}.${s.date.year}'),
+        Text(s.product.name, style: GlorioText.heading),
+        Text('Итог: ${s.total.toStringAsFixed(0)} ₽', style: GlorioText.body),
+        Text('Дата: ${s.date.day}.${s.date.month}.${s.date.year}', style: GlorioText.muted),
             ],
           ),
         );
@@ -211,11 +211,28 @@ class _SalesListScreenState extends State<SalesListScreen> {
     final supplyRepo = context.read<SupplyRepository>();
     final materialsRepo = context.read<MaterialsRepo>();
     final authRepo = context.read<AuthRepo>();
+    final clientsRepo = context.read<ClientsRepo>();
 
     final selection = await pickClient(context);
     if (selection == null) return;
 
     final client = selection.withoutClient ? null : selection.client;
+
+    int usedPoints = 0;
+    double finalTotal = p.sellingPrice;
+    int earnedPoints = 0;
+
+    if (client != null) {
+      usedPoints = await _askUsedPoints(client) ?? 0;
+      usedPoints = usedPoints.clamp(0, client.pointsBalance);
+      finalTotal = (p.sellingPrice - usedPoints).clamp(0, double.infinity);
+      earnedPoints = (finalTotal * client.cashbackPercent / 100).floor();
+
+      final updatedClient = client.copyWith(
+        pointsBalance: client.pointsBalance - usedPoints + earnedPoints,
+      );
+      clientsRepo.updateClient(updatedClient);
+    }
 
     final sale = Sale(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -226,6 +243,9 @@ class _SalesListScreenState extends State<SalesListScreen> {
       clientId: client?.id,
       clientName: client?.name,
       soldBy: authRepo.currentUserLogin,
+      usedPoints: usedPoints,
+      finalTotal: finalTotal,
+      paymentMethod: 'Наличные',
       ingredients: p.ingredients.map((ing) {
         final m = materialsRepo.getByKey(ing.materialKey);
         return SoldIngredient(
@@ -248,6 +268,39 @@ class _SalesListScreenState extends State<SalesListScreen> {
     showcaseRepo.removeProduct(p.id);
 
     setState(() => tabIndex = 1);
+  }
+
+  Future<int?> _askUsedPoints(Client client) async {
+    final ctrl = TextEditingController(text: '0');
+
+    return showDialog<int>(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Списать баллы'),
+          content: TextField(
+            controller: ctrl,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: 'Доступно: ${client.pointsBalance}',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Отмена'),
+            ),
+            TextButton(
+              onPressed: () {
+                final value = int.tryParse(ctrl.text.trim()) ?? 0;
+                Navigator.pop(ctx, value);
+              },
+              child: const Text('Применить'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   // ---------------------------------------------------------------------------
