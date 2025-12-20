@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../design/glorio_colors.dart';
 import '../design/glorio_radius.dart';
 import '../design/glorio_spacing.dart';
@@ -10,6 +11,8 @@ class AppInput extends StatelessWidget {
   final TextInputType? keyboardType;
   final String? errorText;
   final ValueChanged<String>? onChanged;
+  final Widget? suffix;
+  final List<TextInputFormatter>? inputFormatters;
 
   const AppInput({
   super.key,
@@ -19,6 +22,8 @@ class AppInput extends StatelessWidget {
   this.keyboardType,
   this.errorText,
   this.onChanged,
+  this.suffix,
+  this.inputFormatters,
   });
 
   @override
@@ -28,9 +33,11 @@ class AppInput extends StatelessWidget {
       obscureText: obscure,
       keyboardType: keyboardType,
       onChanged: onChanged,
+  inputFormatters: inputFormatters,
       decoration: InputDecoration(
         hintText: hint,
         errorText: errorText,
+        suffixIcon: suffix,
         filled: true,
         fillColor: GlorioColors.card,
   contentPadding: const EdgeInsets.symmetric(horizontal: GlorioSpacing.card, vertical: 14),

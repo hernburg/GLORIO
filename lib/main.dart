@@ -15,6 +15,9 @@ import 'data/repositories/supply_repo.dart';
 import 'data/repositories/sales_repo.dart';
 import 'data/repositories/clients_repo.dart';
 import 'data/repositories/writeoff_repo.dart';
+import 'data/repositories/loyalty_repo.dart';
+import 'data/services/reports_service.dart';
+import 'data/services/writeoff_service.dart';
 
 // MODELS + ADAPTERS
 import 'data/models/client.dart';
@@ -54,7 +57,23 @@ void main() async {
   final clientsRepo = ClientsRepo();
   final salesRepo = SalesRepo();
   final writeoffRepo = WriteoffRepository();
+  final loyaltyRepo = LoyaltyRepository();
   final errorService = ErrorService();
+
+  final writeoffService = WriteoffService(
+    materialsRepo: materialsRepo,
+    writeoffRepo: writeoffRepo,
+  );
+
+  final reportsService = ReportsService(
+    salesRepo: salesRepo,
+    supplyRepo: supplyRepo,
+    writeoffRepo: writeoffRepo,
+    materialsRepo: materialsRepo,
+    clientsRepo: clientsRepo,
+    loyaltyRepo: loyaltyRepo,
+    showcaseRepo: showcaseRepo,
+  );
 
   // ------ РОУТЕР ------
   final appRouter = AppRouter(authRepo);
@@ -99,6 +118,9 @@ void main() async {
         ChangeNotifierProvider.value(value: clientsRepo),
         ChangeNotifierProvider.value(value: salesRepo),
         ChangeNotifierProvider.value(value: writeoffRepo),
+  Provider.value(value: writeoffService),
+        ChangeNotifierProvider.value(value: loyaltyRepo),
+        ChangeNotifierProvider.value(value: reportsService),
         ChangeNotifierProvider.value(value: errorService),
       ],
       child: const FlowerApp(),

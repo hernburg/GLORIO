@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../data/repositories/clients_repo.dart';
+import '../../../data/repositories/sales_repo.dart';
 import '../../../ui/app_card.dart';
 import '../../../ui/add_button.dart';
 import '../../../ui/app_input.dart';
@@ -32,7 +33,23 @@ class _ClientsListScreenState extends State<ClientsListScreen> {
   @override
   Widget build(BuildContext context) {
     final repo = context.watch<ClientsRepo>();
+    final sales = context.watch<SalesRepo>().sales;
     final query = _searchCtrl.text.trim().toLowerCase();
+
+    final Map<String, int> ordersCount = {};
+    final Map<String, double> totalSpent = {};
+    final Map<String, DateTime> lastPurchase = {};
+
+    for (final sale in sales) {
+      if (sale.clientId == null) continue;
+      final id = sale.clientId!;
+      ordersCount[id] = (ordersCount[id] ?? 0) + 1;
+      totalSpent[id] = (totalSpent[id] ?? 0) + sale.total;
+      final existing = lastPurchase[id];
+      if (existing == null || sale.date.isAfter(existing)) {
+        lastPurchase[id] = sale.date;
+      }
+    }
 
     final filtered = repo.clients
         .where((c) =>
@@ -101,7 +118,44 @@ class _ClientsListScreenState extends State<ClientsListScreen> {
                             children: [
                               Text(c.name, style: GlorioText.heading),
                               const SizedBox(height: 4),
-                              Text(c.phone, style: GlorioText.muted),
+                              Row(
+                                children: [
+                                  Expanded(child: Text(c.phone, style: GlorioText.muted)),
+                                  if (ordersCount[c.id] != null)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: GlorioColors.card,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        '${ordersCount[c.id]} покупок',
+                                        style: GlorioText.muted.copyWith(fontSize: 12),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              if (totalSpent[c.id] != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4),
+                                  child: Text(
+                                    'Выручка: ${totalSpent[c.id]!.toStringAsFixed(0)} ₽',
+                                    style: GlorioText.body.copyWith(fontSize: 13),
+                                  ),
+                                ),
+                              if (lastPurchase[c.id] != null)
+                                Text(
+                                  'Последняя покупка: ${_fmtDate(lastPurchase[c.id]!)}',
+                                  style: GlorioText.muted,
+                                ),
+                              if (c.pointsBalance > 0)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4),
+                                  child: Text(
+                                    'Баллы: ${c.pointsBalance}',
+                                    style: GlorioText.muted,
+                                  ),
+                                ),
                             ],
                           ),
                         ),
@@ -171,4 +225,11 @@ class _ClientsListScreenState extends State<ClientsListScreen> {
       ),
     );
   }
+}
+
+String _fmtDate(DateTime date) {
+  final d = date.day.toString().padLeft(2, '0');
+  final m = date.month.toString().padLeft(2, '0');
+  final y = date.year.toString();
+  return '$d.$m.$y';
 }

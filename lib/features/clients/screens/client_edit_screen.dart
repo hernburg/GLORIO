@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../../data/models/client.dart';
@@ -49,6 +50,13 @@ class _ClientEditScreenState extends State<ClientEditScreen> {
   void save() {
     final repo = context.read<ClientsRepo>();
 
+    if (nameCtrl.text.trim().isEmpty || phoneCtrl.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Имя и телефон обязательны')),
+      );
+      return;
+    }
+
     final cashback = double.tryParse(cashbackCtrl.text.trim()) ?? 0;
     final points = int.tryParse(pointsCtrl.text.trim()) ?? 0;
 
@@ -74,6 +82,18 @@ class _ClientEditScreenState extends State<ClientEditScreen> {
     Navigator.pop(context);
   }
 
+  void _adjustPoints(int delta) {
+    final current = int.tryParse(pointsCtrl.text.trim()) ?? 0;
+    final next = (current + delta).clamp(0, 1000000);
+    setState(() => pointsCtrl.text = next.toString());
+  }
+
+  void _adjustCashback(int deltaPercent) {
+    final current = double.tryParse(cashbackCtrl.text.trim()) ?? 0;
+    final next = (current + deltaPercent).clamp(0, 100);
+    setState(() => cashbackCtrl.text = next.toStringAsFixed(0));
+  }
+
   @override
   Widget build(BuildContext context) {
     final sales = context.watch<SalesRepo>().sales;
@@ -82,6 +102,10 @@ class _ClientEditScreenState extends State<ClientEditScreen> {
         ? []
         : (sales.where((s) => s.clientId == clientId).toList()
           ..sort((a, b) => b.date.compareTo(a.date)));
+
+    final ordersCount = purchaseHistory.length;
+    final totalSpent = purchaseHistory.fold<double>(0, (sum, s) => sum + s.total);
+    final lastPurchase = purchaseHistory.isNotEmpty ? purchaseHistory.first.date : null;
 
     return Scaffold(
       backgroundColor: GlorioColors.background,
@@ -110,6 +134,16 @@ class _ClientEditScreenState extends State<ClientEditScreen> {
                       controller: phoneCtrl,
                       hint: 'Телефон',
                       keyboardType: TextInputType.phone,
+                      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9+ ]'))],
+                      suffix: IconButton(
+                        icon: const Icon(Icons.copy, size: 18),
+                        onPressed: () {
+                          Clipboard.setData(ClipboardData(text: phoneCtrl.text.trim()));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Телефон скопирован')),
+                          );
+                        },
+                      ),
                     ),
                     const SizedBox(height: 16),
                     AppInput(
@@ -122,11 +156,29 @@ class _ClientEditScreenState extends State<ClientEditScreen> {
                       hint: 'Cashback %',
                       keyboardType: TextInputType.number,
                     ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      children: [
+                        _QuickPill(label: '+1%', onTap: () => _adjustCashback(1)),
+                        _QuickPill(label: '+5%', onTap: () => _adjustCashback(5)),
+                        _QuickPill(label: '-1%', onTap: () => _adjustCashback(-1)),
+                      ],
+                    ),
                     const SizedBox(height: 16),
                     AppInput(
                       controller: pointsCtrl,
                       hint: 'Баллы лояльности',
                       keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      children: [
+                        _QuickPill(label: '+10', onTap: () => _adjustPoints(10)),
+                        _QuickPill(label: '+50', onTap: () => _adjustPoints(50)),
+                        _QuickPill(label: '-10', onTap: () => _adjustPoints(-10)),
+                      ],
                     ),
                   ],
                 ),
@@ -136,6 +188,26 @@ class _ClientEditScreenState extends State<ClientEditScreen> {
 
               /// События
               Text('События', style: GlorioText.heading),
+
+              const SizedBox(height: 12),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      ordersCount > 0
+                          ? 'Покупок: $ordersCount · ${totalSpent.toStringAsFixed(0)} ₽'
+                          : 'Покупок пока нет',
+                      style: GlorioText.muted,
+                    ),
+                  ),
+                  if (lastPurchase != null)
+                    Text(
+                      'Последняя: ${_fmtDate(lastPurchase)}',
+                      style: GlorioText.muted,
+                    ),
+                ],
+              ),
 
               const SizedBox(height: 12),
 
@@ -181,6 +253,40 @@ class _ClientEditScreenState extends State<ClientEditScreen> {
                 onTap: save,
               ),
 
+              if (widget.client != null) ...[
+                const SizedBox(height: 12),
+                AppButton(
+                  text: 'Удалить клиента',
+                  onTap: () async {
+                    final clientsRepo = context.read<ClientsRepo>();
+                    final navigator = Navigator.of(context);
+
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (_) => AlertDialog(
+                        title: const Text('Удалить клиента?'),
+                        content: const Text('История покупок останется в продажах, но клиент будет удалён.'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text('Отмена'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            child: const Text('Удалить'),
+                          ),
+                        ],
+                      ),
+                    );
+
+                    if (confirm == true) {
+                      clientsRepo.removeClient(widget.client!.id);
+                      navigator.pop();
+                    }
+                  },
+                ),
+              ],
+
               const SizedBox(height: 28),
 
               /// История покупок
@@ -225,4 +331,30 @@ class _ClientEditScreenState extends State<ClientEditScreen> {
       ),
     );
   }
+}
+
+class _QuickPill extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _QuickPill({required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton(
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        minimumSize: const Size(0, 36),
+      ),
+      onPressed: onTap,
+      child: Text(label),
+    );
+  }
+}
+
+String _fmtDate(DateTime date) {
+  final d = date.day.toString().padLeft(2, '0');
+  final m = date.month.toString().padLeft(2, '0');
+  final y = date.year.toString();
+  return '$d.$m.$y';
 }
