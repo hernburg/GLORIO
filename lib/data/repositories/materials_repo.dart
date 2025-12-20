@@ -68,6 +68,7 @@ class MaterialsRepo extends ChangeNotifier {
     final m = _box!.get(materialKey);
     if (m == null || m.isInfinite) return;
 
+    debugPrint('MaterialsRepo.returnQuantity: material=$materialKey qty=$qty old=${m.quantity} -> new=${m.quantity + qty}');
     _box!.put(materialKey, m.copyWith(quantity: m.quantity + qty));
     notifyListeners();
   }

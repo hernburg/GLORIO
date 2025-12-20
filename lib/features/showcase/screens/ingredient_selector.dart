@@ -211,41 +211,43 @@ class _IngredientSelectorState extends State<IngredientSelector> {
                     onTap: () async {
                       if (_popped) return;
 
-                      final totalAvailable = supplyRepo.totalAvailable(m.id);
+                        // Capture values derived from context before awaiting
+                        final totalAvailable = supplyRepo.totalAvailable(m.id);
 
-                      final alreadyUsed = widget.selectedIngredients
-                          .where((i) => i.materialKey == m.id)
-                          .fold<double>(
-                            0,
-                            (sum, i) => sum + i.quantity,
+                        final alreadyUsed = widget.selectedIngredients
+                            .where((i) => i.materialKey == m.id)
+                            .fold<double>(
+                              0,
+                              (sum, i) => sum + i.quantity,
+                            );
+
+                        final available = totalAvailable - alreadyUsed;
+
+                          if (available <= 0) {
+                            final messenger = ScaffoldMessenger.of(context);
+                            messenger.showSnackBar(
+                              const SnackBar(
+                                content: Text('Нет на складе'),
+                              ),
+                            );
+                            return;
+                          }
+
+                          // Capture navigator context/router before awaiting
+                          final navigator = Navigator.of(context);
+
+                          final qty = await _enterQty(m, available);
+                          if (!mounted || qty == null) return;
+
+                          _popped = true;
+
+                          navigator.pop(
+                            Ingredient(
+                              materialKey: m.id,
+                              quantity: qty,
+                              costPerUnit: m.costPerUnit,
+                            ),
                           );
-
-                      final available =
-                          totalAvailable - alreadyUsed;
-
-                      if (available <= 0) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Нет на складе'),
-                          ),
-                        );
-                        return;
-                      }
-
-                      final qty =
-                          await _enterQty(m, available);
-                      if (!mounted || qty == null) return;
-
-                      _popped = true;
-
-                      Navigator.pop(
-                        context,
-                        Ingredient(
-                          materialKey: m.id,
-                          quantity: qty,
-                          costPerUnit: m.costPerUnit,
-                        ),
-                      );
                     },
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

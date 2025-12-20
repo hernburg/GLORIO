@@ -18,6 +18,9 @@ class ClientSelectionResult {
 }
 
 Future<ClientSelectionResult?> pickClient(BuildContext context) async {
+  // Capture router and other context-derived singletons before awaiting
+  final router = GoRouter.of(context);
+
   while (true) {
     final result = await showModalBottomSheet<ClientSelectionResult>(
       context: context,
@@ -106,7 +109,7 @@ Future<ClientSelectionResult?> pickClient(BuildContext context) async {
 
     if (result == null) return null;
     if (result.createNew) {
-      await context.push('/clients/edit');
+      await router.push('/clients/edit');
       continue;
     }
     return result;

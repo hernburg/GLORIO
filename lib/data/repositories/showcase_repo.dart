@@ -17,6 +17,14 @@ class ShowcaseRepo extends ChangeNotifier {
   }
 
   void addProduct(AssembledProduct p) {
+    // If a product with the same id already exists, treat this as an update
+    // to avoid accidental duplicates (callers creating a new product should
+    // generate a new id instead).
+    if (_box.containsKey(p.id)) {
+      updateProduct(p);
+      return;
+    }
+
     _box.put(p.id, p);
     notifyListeners();
   }

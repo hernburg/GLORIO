@@ -1,37 +1,50 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../design/glorio_colors.dart';
+import '../design/glorio_radius.dart';
 
 class AppCard extends StatelessWidget {
   final Widget child;
-  final EdgeInsetsGeometry? padding;
+  final EdgeInsets? padding;
   final VoidCallback? onTap;
 
-  const AppCard({
-    super.key,
-    required this.child,
-    this.padding,
-    this.onTap,
-  });
+  const AppCard({super.key, required this.child, this.padding, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final card = Container(
-      padding: padding ?? const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: const Color(0xFFD8D2C8),
+    final card = ClipRRect(
+      borderRadius: BorderRadius.circular(GlorioRadius.card),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          padding: padding ?? const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: GlorioColors.card.withAlpha(230),
+            borderRadius: BorderRadius.circular(GlorioRadius.card),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.06),
+                blurRadius: 22,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: child,
         ),
       ),
-      child: child,
     );
 
-    if (onTap == null) return card;
+    if (onTap != null) {
+      return Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(GlorioRadius.card),
+          child: card,
+        ),
+      );
+    }
 
-    return InkWell(
-      borderRadius: BorderRadius.circular(14),
-      onTap: onTap,
-      child: card,
-    );
+    return card;
   }
 }

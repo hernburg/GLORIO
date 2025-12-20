@@ -8,9 +8,13 @@ import '../../../ui/app_card.dart';
 import '../../../ui/app_button.dart';
 
 import '../widgets/supply_item_editor.dart';
+import '../../../design/glorio_colors.dart';
+import '../../../design/glorio_spacing.dart';
 
 class SupplyCreateScreen extends StatefulWidget {
-  const SupplyCreateScreen({super.key});
+  final String? editId;
+
+  const SupplyCreateScreen({super.key, this.editId});
 
   @override
   State<SupplyCreateScreen> createState() => _SupplyCreateScreenState();
@@ -18,6 +22,22 @@ class SupplyCreateScreen extends StatefulWidget {
 
 class _SupplyCreateScreenState extends State<SupplyCreateScreen> {
   final List<SupplyItem> items = [];
+  DateTime? _date;
+  bool get isEditing => widget.editId != null;
+
+  @override
+  void initState() {
+    super.initState();
+    if (isEditing) {
+      final repo = context.read<SupplyRepository>();
+      final s = repo.getById(widget.editId!);
+      if (s != null) {
+        _date = s.date;
+        items.addAll(s.items.map((e) => e.copyWith()));
+      }
+    }
+    _date ??= DateTime.now();
+  }
 
   // ---------------------------------------------------------------------------
   // SAVE SUPPLY
@@ -30,10 +50,13 @@ class _SupplyCreateScreenState extends State<SupplyCreateScreen> {
       return;
     }
 
-    context.read<SupplyRepository>().addSupply(
-          date: DateTime.now(),
-          items: items,
-        );
+    final repo = context.read<SupplyRepository>();
+
+    if (isEditing) {
+      repo.updateSupply(id: widget.editId!, date: _date ?? DateTime.now(), items: items);
+    } else {
+      repo.addSupply(date: _date ?? DateTime.now(), items: items);
+    }
 
     Navigator.pop(context);
   }
@@ -64,9 +87,15 @@ class _SupplyCreateScreenState extends State<SupplyCreateScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Новая поставка')),
+      backgroundColor: GlorioColors.background,
+      appBar: AppBar(backgroundColor: GlorioColors.background, title: const Text('Новая поставка')),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.only(
+            left: GlorioSpacing.page,
+            right: GlorioSpacing.page,
+            top: MediaQuery.of(context).viewPadding.top + GlorioSpacing.page,
+            bottom: GlorioSpacing.page,
+          ),
         children: [
           // -------------------------------------------------
           // POSITIONS

@@ -17,6 +17,8 @@ import '../../../data/repositories/supply_repo.dart';
 import '../../../data/repositories/auth_repo.dart';
 
 import '../widgets/client_selector.dart';
+import '../../../design/glorio_colors.dart';
+import '../../../design/glorio_spacing.dart';
 
 class SalesListScreen extends StatefulWidget {
   const SalesListScreen({super.key});
@@ -34,16 +36,17 @@ class _SalesListScreenState extends State<SalesListScreen> {
     final sales = context.watch<SalesRepo>().sales;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F3EE),
+      backgroundColor: GlorioColors.background,
       body: Column(
         children: [
-          const SizedBox(height: 40),
-          _buildTabs(),
-          const SizedBox(height: 12),
+          SizedBox(height: MediaQuery.of(context).viewPadding.top + GlorioSpacing.page),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: GlorioSpacing.page),
+            child: _buildTabs(),
+          ),
+          const SizedBox(height: GlorioSpacing.gapSmall),
           Expanded(
-            child: tabIndex == 0
-                ? _buildAvailable(showcase)
-                : _buildSold(sales),
+            child: tabIndex == 0 ? _buildAvailable(showcase) : _buildSold(sales),
           ),
         ],
       ),
@@ -55,17 +58,17 @@ class _SalesListScreenState extends State<SalesListScreen> {
   // ---------------------------------------------------------------------------
   Widget _buildTabs() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: GlorioSpacing.page),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(22),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: Container(
-            padding: const EdgeInsets.all(10),
+            child: Container(
+            padding: const EdgeInsets.all(GlorioSpacing.card),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: Colors.black12),
-              color: Colors.white.withValues(alpha: 0.6),
+              border: Border.all(color: GlorioColors.border),
+              color: GlorioColors.card.withAlpha((0.6 * 255).round()),
             ),
             child: Row(
               children: [
@@ -115,7 +118,12 @@ class _SalesListScreenState extends State<SalesListScreen> {
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: MediaQuery.of(context).viewPadding.top + 16,
+        bottom: 16,
+      ),
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemCount: products.length,
       itemBuilder: (_, i) {
@@ -165,7 +173,12 @@ class _SalesListScreenState extends State<SalesListScreen> {
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: MediaQuery.of(context).viewPadding.top + 16,
+        bottom: 16,
+      ),
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemCount: sales.length,
       itemBuilder: (_, i) {
@@ -192,42 +205,26 @@ class _SalesListScreenState extends State<SalesListScreen> {
   // ПРОДАЖА
   // ---------------------------------------------------------------------------
   Future<void> _sell(AssembledProduct p) async {
-    final sale = await _createSale(context, p);
-    if (!mounted || sale == null) return;
-
+    // Capture repos and other context-dependent objects before awaiting
     final salesRepo = context.read<SalesRepo>();
     final showcaseRepo = context.read<ShowcaseRepo>();
     final supplyRepo = context.read<SupplyRepository>();
-
-    for (final ing in p.ingredients) {
-  supplyRepo.consumeMaterial(
-    materialKey: ing.materialKey,
-    qty: ing.quantity,
-  );
-}
-
-    salesRepo.addSale(sale);
-    showcaseRepo.removeProduct(p.id);
-
-    setState(() => tabIndex = 1);
-  }
-
-  Future<Sale?> _createSale(
-      BuildContext context, AssembledProduct p) async {
-    final selection = await pickClient(context);
-    if (selection == null) return null;
-
     final materialsRepo = context.read<MaterialsRepo>();
     final authRepo = context.read<AuthRepo>();
 
-    return Sale(
+    final selection = await pickClient(context);
+    if (selection == null) return;
+
+    final client = selection.withoutClient ? null : selection.client;
+
+    final sale = Sale(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       product: p,
       quantity: 1,
       price: p.sellingPrice,
       date: DateTime.now(),
-      clientId: selection.client?.id,
-      clientName: selection.client?.name,
+      clientId: client?.id,
+      clientName: client?.name,
       soldBy: authRepo.currentUserLogin,
       ingredients: p.ingredients.map((ing) {
         final m = materialsRepo.getByKey(ing.materialKey);
@@ -239,6 +236,18 @@ class _SalesListScreenState extends State<SalesListScreen> {
         );
       }).toList(),
     );
+
+    for (final ing in p.ingredients) {
+      supplyRepo.consumeMaterial(
+        materialKey: ing.materialKey,
+        qty: ing.quantity,
+      );
+    }
+
+    salesRepo.addSale(sale);
+    showcaseRepo.removeProduct(p.id);
+
+    setState(() => tabIndex = 1);
   }
 
   // ---------------------------------------------------------------------------

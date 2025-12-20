@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../widgets/liquid_navbar.dart';
+import '../../design/glorio_colors.dart';
+import '../../design/glorio_spacing.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -14,10 +16,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const backgroundColor = Color(0xFFF0F8F8);
-
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: GlorioColors.background,
       body: SafeArea(
         child: Center(
           child: Column(
@@ -38,7 +38,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       ),
       bottomNavigationBar: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+          padding: const EdgeInsets.fromLTRB(GlorioSpacing.page, 4, GlorioSpacing.page, GlorioSpacing.page),
           child: LiquidNavbar(
             currentIndex: _currentIndex,
             onTap: (index) {

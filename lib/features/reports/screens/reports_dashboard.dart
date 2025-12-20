@@ -3,11 +3,12 @@ import 'package:provider/provider.dart';
 
 import '../../../ui/app_card.dart';
 import '../../../ui/app_button.dart';
-import '../../../ui/screen_content_layout.dart';
 
 import '../../../data/repositories/sales_repo.dart';
 import '../../../data/repositories/showcase_repo.dart';
 import '../../../data/repositories/supply_repo.dart';
+import '../../../design/glorio_colors.dart';
+import '../../../design/glorio_spacing.dart';
 
 class ReportsDashboard extends StatelessWidget {
   const ReportsDashboard({super.key});
@@ -35,9 +36,15 @@ class ReportsDashboard extends StatelessWidget {
 
     final profit = totalRevenue - totalCost;
 
-    return ScreenContentLayout(
-      child: ListView(
-        padding: const EdgeInsets.all(16),
+    return Scaffold(
+      backgroundColor: GlorioColors.background,
+      body: ListView(
+        padding: EdgeInsets.only(
+          left: GlorioSpacing.page,
+          right: GlorioSpacing.page,
+          top: MediaQuery.of(context).viewPadding.top + GlorioSpacing.page,
+          bottom: GlorioSpacing.page,
+        ),
         children: [
           /// -----------------------------
           /// ИТОГО

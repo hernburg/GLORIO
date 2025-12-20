@@ -26,11 +26,11 @@ class LiquidNavbar extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.25),
+  color: Colors.white.withValues(alpha: 0.25),
         borderRadius: BorderRadius.circular(26),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 16,
             offset: const Offset(0, 10),
           ),
@@ -68,7 +68,7 @@ class LiquidNavbar extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                         color: isActive
                             ? highlightColor
-                            : const Color(0xFF0D1B26).withOpacity(0.7),
+                            : const Color(0xFF0D1B26).withValues(alpha: 0.7),
                       ),
                     ),
                   ],

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../data/repositories/sales_repo.dart';
+import '../../../design/glorio_colors.dart';
+import '../../../design/glorio_spacing.dart';
 
 class SaleInfoScreen extends StatelessWidget {
   final String saleId;
@@ -13,18 +15,26 @@ class SaleInfoScreen extends StatelessWidget {
     final sale = context.watch<SalesRepo>().getSaleById(saleId);
 
     if (sale == null) {
-      return const Scaffold(
+      return Scaffold(
+        backgroundColor: GlorioColors.background,
         body: Center(child: Text('Продажа не найдена')),
       );
     }
 
     return Scaffold(
+      backgroundColor: GlorioColors.background,
       appBar: AppBar(
+        backgroundColor: GlorioColors.background,
         title: const Text('Информация о продаже'),
       ),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.only(
+              left: GlorioSpacing.page,
+              right: GlorioSpacing.page,
+              top: MediaQuery.of(context).viewPadding.top + GlorioSpacing.page,
+              bottom: GlorioSpacing.page,
+            ),
           children: [
             Text(
               sale.product.name,
@@ -49,7 +59,7 @@ class SaleInfoScreen extends StatelessWidget {
             ...sale.ingredients.map(
               (ing) => ListTile(
                 contentPadding: EdgeInsets.zero,
-                title: Text(ing.materialName ?? ing.materialKey),
+                title: Text(ing.materialName.isNotEmpty ? ing.materialName : ing.materialKey),
                 subtitle: Text('Количество: ${ing.quantity}'),
               ),
             ),

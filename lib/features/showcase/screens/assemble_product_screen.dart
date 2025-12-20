@@ -1,9 +1,9 @@
+// AssembleProductScreen — create / edit bouquet
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../ui/app_card.dart';
@@ -11,11 +11,17 @@ import '../../../ui/add_button.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_input.dart';
 
+import '../../../design/glorio_colors.dart';
+import '../../../design/glorio_spacing.dart';
+import '../../../design/glorio_radius.dart';
+import '../../../design/glorio_text.dart';
+
 import '../../../data/models/ingredient.dart';
 import '../../../data/models/assembled_product.dart';
 
 import '../../../data/repositories/materials_repo.dart';
 import '../../../data/repositories/showcase_repo.dart';
+import '../../../data/repositories/supply_repo.dart';
 
 import 'ingredient_selector.dart';
 
@@ -23,11 +29,7 @@ class AssembleProductScreen extends StatefulWidget {
   final AssembledProduct? editProduct;
   final String? editId;
 
-  const AssembleProductScreen({
-    super.key,
-    this.editProduct,
-    this.editId,
-  });
+  const AssembleProductScreen({super.key, this.editProduct, this.editId});
 
   @override
   State<AssembleProductScreen> createState() => _AssembleProductScreenState();
@@ -36,139 +38,132 @@ class AssembleProductScreen extends StatefulWidget {
 class _AssembleProductScreenState extends State<AssembleProductScreen> {
   final nameController = TextEditingController();
   final priceController = TextEditingController();
-
   final List<Ingredient> ingredients = [];
   String? photoUrl;
+  AssembledProduct? _originalProduct;
 
-  double get totalCost => ingredients.fold(0, (sum, i) => sum + i.totalCost);
+  double get totalCost => ingredients.fold(0, (s, i) => s + i.totalCost);
 
   @override
   void initState() {
     super.initState();
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-
       if (widget.editProduct != null) {
         _applyProduct(widget.editProduct!);
       } else if (widget.editId != null) {
-        final product = context.read<ShowcaseRepo>().getById(widget.editId!);
-        if (product != null) _applyProduct(product);
+        final p = context.read<ShowcaseRepo>().getById(widget.editId!);
+        if (p != null) _applyProduct(p);
       }
     });
   }
 
   void _applyProduct(AssembledProduct p) {
-  nameController.text = p.name;
-  priceController.text = p.sellingPrice.toStringAsFixed(0);
-
-  ingredients
-    ..clear()
-    ..addAll(p.ingredients);
-
-  photoUrl = p.photoUrl;
-  setState(() {});
-}
-
-  // ---------------------------------------------------------------------------
-  // PHOTO
-  // ---------------------------------------------------------------------------
-  Future<void> _pickPhoto() async {
-    final picker = ImagePicker();
-    final img = await picker.pickImage(source: ImageSource.gallery);
-    if (!mounted) return;
-
-    if (img != null) {
-      setState(() => photoUrl = img.path);
-    }
+    _originalProduct = p;
+    nameController.text = p.name;
+    priceController.text = p.sellingPrice.toString();
+    photoUrl = p.photoUrl;
+    ingredients.clear();
+    ingredients.addAll(p.ingredients.map((i) => i));
+    setState(() {});
   }
 
-  // ---------------------------------------------------------------------------
-  // INGREDIENT PICKER
-  // ---------------------------------------------------------------------------
   Future<void> _openIngredientSelector() async {
-    final materials = context.read<MaterialsRepo>().materials; // List<MaterialItem>
-
-    final picked = await showModalBottomSheet<Ingredient>(
+    final materials = context.read<MaterialsRepo>().materials;
+    final result = await showModalBottomSheet<Ingredient>(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
-      ),
-      builder: (_) {
-        return IngredientSelector(
-          materials: materials,
-          selectedIngredients: ingredients,
-        );
-      },
+      builder: (_) => IngredientSelector(materials: materials, selectedIngredients: ingredients),
     );
 
-    if (!mounted || picked == null) return;
-
-    setState(() {
-      final index = ingredients.indexWhere(
-        (i) => i.materialKey == picked.materialKey,
-      );
-
-      if (index >= 0) {
-        ingredients[index] = ingredients[index].copyWith(
-          quantity: ingredients[index].quantity + picked.quantity,
-        );
-      } else {
-        ingredients.add(picked);
-      }
-    });
+    if (!mounted || result == null) return;
+    setState(() => ingredients.add(result));
   }
 
-  // ---------------------------------------------------------------------------
-  // SAVE PRODUCT
-  // ---------------------------------------------------------------------------
+  Future<void> _pickPhoto() async {
+    final picker = ImagePicker();
+    final x = await picker.pickImage(source: ImageSource.gallery, maxWidth: 1200);
+    if (x == null) return;
+    setState(() => photoUrl = x.path);
+  }
+
+
   void _saveProduct() {
     final name = nameController.text.trim();
     final price = double.tryParse(priceController.text.replaceAll(',', '.')) ?? 0;
 
     if (name.isEmpty || price <= 0 || ingredients.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Заполните все поля')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Заполните все поля')));
       return;
     }
 
     final showcase = context.read<ShowcaseRepo>();
+    final supplyRepo = context.read<SupplyRepository>();
+    final materialsRepo = context.read<MaterialsRepo>();
 
-    if (widget.editProduct == null) {
-      showcase.addProduct(
-        AssembledProduct(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          name: name,
-          photoUrl: photoUrl,
-          ingredients: ingredients,
-          costPrice: totalCost,
-          sellingPrice: price,
-        ),
+    final isEditing = widget.editProduct != null || widget.editId != null;
+
+    if (isEditing) {
+      final existingId = widget.editProduct?.id ?? widget.editId!;
+
+      final updated = AssembledProduct(
+        id: existingId,
+        name: name,
+        photoUrl: photoUrl,
+        ingredients: ingredients,
+        costPrice: totalCost,
+        sellingPrice: price,
       );
+
+      final oldMap = <String, double>{};
+      if (_originalProduct != null) {
+        for (final ing in _originalProduct!.ingredients) {
+          oldMap[ing.materialKey] = ing.quantity;
+        }
+      }
+
+      final newMap = <String, double>{};
+      for (final ing in ingredients) {
+        newMap[ing.materialKey] = ing.quantity;
+      }
+
+      final allKeys = {...oldMap.keys, ...newMap.keys};
+      for (final key in allKeys) {
+        final oldQty = oldMap[key] ?? 0.0;
+        final newQty = newMap[key] ?? 0.0;
+        final delta = newQty - oldQty;
+        if (delta > 0) {
+          debugPrint('AssembleProductScreen: editing -> consuming delta for $key: $delta (old: $oldQty -> new: $newQty)');
+          supplyRepo.consumeMaterial(materialKey: key, qty: delta);
+        } else if (delta < 0) {
+          debugPrint('AssembleProductScreen: editing -> returning for $key: ${-delta} (old: $oldQty -> new: $newQty)');
+          materialsRepo.returnQuantity(key, -delta);
+        }
+      }
+
+      showcase.updateProduct(updated);
     } else {
-      showcase.updateProduct(
-        widget.editProduct!.copyWith(
-          name: name,
-          sellingPrice: price,
-          ingredients: ingredients,
-          costPrice: totalCost,
-          photoUrl: photoUrl,
-        ),
-      );
+      for (final ing in ingredients) {
+        debugPrint('AssembleProductScreen: creating -> consuming ${ing.quantity} of ${ing.materialKey}');
+        supplyRepo.consumeMaterial(materialKey: ing.materialKey, qty: ing.quantity);
+      }
+
+      showcase.addProduct(AssembledProduct(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        name: name,
+        photoUrl: photoUrl,
+        ingredients: ingredients,
+        costPrice: totalCost,
+        sellingPrice: price,
+      ));
     }
 
-    context.pop();
+  Navigator.of(context).pop();
   }
 
-  // ---------------------------------------------------------------------------
-  // UI
-  // ---------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     ImageProvider? image;
-
     if (photoUrl != null && photoUrl!.isNotEmpty) {
       final uri = Uri.tryParse(photoUrl!);
       if (uri != null && uri.scheme.startsWith('http')) {
@@ -179,146 +174,95 @@ class _AssembleProductScreenState extends State<AssembleProductScreen> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F3EE),
+      backgroundColor: GlorioColors.background,
       floatingActionButton: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           AddButton(onTap: _openIngredientSelector),
           const SizedBox(height: 6),
-          const Text(
-            'Добавить ингредиент',
-            style: TextStyle(fontSize: 12, color: Color(0xFF7A7A7A)),
-          ),
+          const Text('Добавить ингредиент', style: TextStyle(fontSize: 12, color: Color(0xFF7A7A7A))),
         ],
       ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            // PHOTO
-            GestureDetector(
-              onTap: _pickPhoto,
-              child: AppCard(
-                padding: EdgeInsets.zero,
-                child: Container(
-                  height: 160,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(14),
-                    color: Colors.grey.shade200,
-                    image: image != null
-                        ? DecorationImage(image: image, fit: BoxFit.cover)
-                        : null,
-                  ),
-                  alignment: Alignment.center,
-                  child: image == null
-                      ? const Text(
-                          'Загрузить фото',
-                          style: TextStyle(color: Color(0xFF7A7A7A)),
-                        )
-                      : null,
+      body: ListView(
+        padding: EdgeInsets.only(
+          left: GlorioSpacing.page,
+          right: GlorioSpacing.page,
+          top: MediaQuery.of(context).viewPadding.top + GlorioSpacing.page,
+          bottom: MediaQuery.of(context).viewPadding.bottom + GlorioSpacing.page,
+        ),
+        children: [
+          GestureDetector(
+            onTap: _pickPhoto,
+            child: AppCard(
+              padding: EdgeInsets.zero,
+              child: Container(
+                height: 160,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(GlorioRadius.card),
+                  color: GlorioColors.cardAlt,
+                  image: image != null ? DecorationImage(image: image, fit: BoxFit.cover) : null,
                 ),
+                alignment: Alignment.center,
+                child: image == null ? const Text('Загрузить фото', style: TextStyle(color: Color(0xFF7A7A7A))) : null,
               ),
             ),
+          ),
 
-            const SizedBox(height: 20),
+          const SizedBox(height: 20),
 
-            // MAIN DATA
-            AppCard(
-              child: Column(
-                children: [
-                  AppInput(
-                    controller: nameController,
-                    hint: 'Название букета',
-                  ),
-                  const SizedBox(height: 16),
-                  AppInput(
-                    controller: priceController,
-                    hint: 'Цена продажи',
-                    keyboardType: TextInputType.number,
-                  ),
-                ],
-              ),
+          AppCard(
+            child: Column(
+              children: [
+                AppInput(controller: nameController, hint: 'Название букета'),
+                const SizedBox(height: GlorioSpacing.gap),
+                AppInput(controller: priceController, hint: 'Цена продажи', keyboardType: TextInputType.number),
+              ],
             ),
+          ),
 
-            const SizedBox(height: 16),
+          const SizedBox(height: 16),
 
-            Text(
-              'Себестоимость: ${totalCost.toStringAsFixed(0)} ₽',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+          Text('Себестоимость: ${totalCost.toStringAsFixed(0)} ₽', style: GlorioText.heading),
 
-            const SizedBox(height: 24),
+          const SizedBox(height: 24),
 
-            const Text(
-              'Ингредиенты',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
+          const Text('Ингредиенты', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          const SizedBox(height: GlorioSpacing.gapSmall),
 
-            const SizedBox(height: 12),
+          if (ingredients.isEmpty) const Text('Ингредиенты не добавлены', style: GlorioText.muted),
 
-            if (ingredients.isEmpty)
-              const Text(
-                'Ингредиенты не добавлены',
-                style: TextStyle(color: Color(0xFF7A7A7A)),
-              ),
+          ...ingredients.asMap().entries.map((entry) {
+            final index = entry.key;
+            final ing = entry.value;
+            final material = context.read<MaterialsRepo>().getByKey(ing.materialKey);
 
-            ...ingredients.asMap().entries.map((entry) {
-              final index = entry.key;
-              final ing = entry.value;
-
-              final material =
-                  context.read<MaterialsRepo>().getByKey(ing.materialKey);
-
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: AppCard(
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: AppCard(
                   child: Row(
                     children: [
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              material?.name ?? ing.materialKey,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            Text(
-                              '${ing.quantity} × ${ing.costPerUnit} ₽ = ${ing.totalCost.toStringAsFixed(0)} ₽',
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: Color(0xFF7A7A7A),
-                              ),
-                            ),
+                            Text(material?.name ?? ing.materialKey, style: GlorioText.heading),
+                            Text('${ing.quantity} × ${ing.costPerUnit} ₽ = ${ing.totalCost.toStringAsFixed(0)} ₽', style: GlorioText.muted),
                           ],
                         ),
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.delete_outline),
-                        onPressed: () {
-                          setState(() => ingredients.removeAt(index));
-                        },
-                      ),
+                      IconButton(icon: const Icon(Icons.delete_outline), onPressed: () => setState(() => ingredients.removeAt(index))),
                     ],
                   ),
                 ),
-              );
-            }),
+            );
+          }),
 
-            const SizedBox(height: 80),
-          ],
-        ),
+          const SizedBox(height: 80),
+        ],
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(12),
-        child: AppButton(
-          text: 'Сохранить букет',
-          onTap: _saveProduct,
-        ),
+        child: AppButton(text: 'Сохранить букет', onTap: _saveProduct),
       ),
     );
   }

@@ -1,13 +1,11 @@
-import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:provider/provider.dart';
 
-import '../../data/models/supply.dart';
-import '../../data/repositories/supply_repo.dart';
 import '../../data/repositories/clients_repo.dart';
 import '../../data/repositories/loyalty_repo.dart';
-import '../../data/repositories/showcase_repo.dart';
 import '../../data/repositories/materials_repo.dart';
+import '../../data/repositories/showcase_repo.dart';
+import '../../data/repositories/supply_repo.dart';
 
 class AppProviders {
   static List<SingleChildWidget> providers = [

@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../ui/app_card.dart';
 import '../../../ui/add_button.dart';
+import '../../../design/glorio_colors.dart';
+import '../../../design/glorio_spacing.dart';
 
 import '../../../data/models/assembled_product.dart';
 import '../../../data/models/sale.dart';
@@ -23,25 +25,39 @@ class ShowcaseListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final showcase = context.watch<ShowcaseRepo>();
     final items = showcase.products;
+    // Capture router from context to avoid using BuildContext across async gaps
+    final router = GoRouter.of(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F3EE),
+      backgroundColor: GlorioColors.background,
       floatingActionButton: AddButton(
-        onTap: () => context.push('/assemble'),
+        onTap: () => router.push('/assemble'),
       ),
       body: items.isEmpty
-          ? const Center(
-              child: Text(
-                'Пока витрина пуста\nНажмите +, чтобы собрать букет',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Color(0xFF7A7A7A),
+          ? Center(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: GlorioSpacing.page,
+                  right: GlorioSpacing.page,
+                  top: MediaQuery.of(context).viewPadding.top + GlorioSpacing.page,
+                ),
+                child: const Text(
+                  'Пока витрина пуста\nНажмите +, чтобы собрать букет',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Color(0xFF7A7A7A),
+                  ),
                 ),
               ),
             )
           : ListView.separated(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.only(
+                left: GlorioSpacing.page,
+                right: GlorioSpacing.page,
+                top: MediaQuery.of(context).viewPadding.top + GlorioSpacing.page,
+                bottom: GlorioSpacing.page,
+              ),
               itemCount: items.length,
               separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
@@ -162,10 +178,13 @@ class _ShowcaseCard extends StatelessWidget {
     final materialsRepo = context.read<MaterialsRepo>();
     final authRepo = context.read<AuthRepo>();
 
-    final selection = await pickClient(context);
-    if (selection == null) return;
+  // Capture messenger before awaiting UI operations to avoid using context after await
+  final messenger = ScaffoldMessenger.of(context);
 
-    final client = selection.withoutClient ? null : selection.client;
+  final selection = await pickClient(context);
+  if (selection == null) return;
+
+  final client = selection.withoutClient ? null : selection.client;
 
     final sale = Sale(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -179,10 +198,10 @@ class _ShowcaseCard extends StatelessWidget {
       ingredients: item.ingredients.map((ing) {
         final material = materialsRepo.getByKey(ing.materialKey);
         return SoldIngredient(
-  materialKey: ing.materialKey,
-  quantity: ing.quantity,
-  costPerUnit: ing.costPerUnit,
-  materialName: material?.name ?? ing.materialKey,
+          materialKey: ing.materialKey,
+          quantity: ing.quantity,
+          costPerUnit: ing.costPerUnit,
+          materialName: material?.name ?? ing.materialKey,
 );
       }).toList(),
     );
@@ -190,8 +209,9 @@ class _ShowcaseCard extends StatelessWidget {
     salesRepo.addSale(sale);
     showcaseRepo.removeProduct(item.id);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Букет продан')),
+    // Show snackbar using messenger captured before await
+    messenger.showSnackBar(
+      const SnackBar(content: Text('\u0411\u0443\u043a\u0435\u0442 \u043f\u0440\u043e\u0434\u0430\u043d')),
     );
   }
 }

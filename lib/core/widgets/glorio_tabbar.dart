@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../../design/glorio_colors.dart';
+import '../../design/glorio_radius.dart';
 
 class GlorioTabBar extends StatefulWidget {
   final int currentIndex;
@@ -92,18 +94,17 @@ class _GlorioTabBarState extends State<GlorioTabBar>
               /// 🧊 СТЕКЛО (без собственного фона)
               child: Container(
                 height: 64,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.08),
+                  color: Colors.white.withAlpha((0.08 * 255).round()),
                   borderRadius: BorderRadius.circular(28),
                   border: Border.all(
-                    color: Colors.white.withOpacity(0.35),
+                    color: Colors.white.withAlpha((0.35 * 255).round()),
                     width: 1.1,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withAlpha((0.05 * 255).round()),
                       blurRadius: 18,
                       offset: const Offset(0, 8),
                     ),
@@ -139,15 +140,14 @@ class _GlorioTabBarState extends State<GlorioTabBar>
                                     gradient: LinearGradient(
                                       begin: Alignment.topLeft,
                                       end: Alignment.bottomRight,
-                                      colors: [
-                                        Colors.white.withOpacity(0.55),
-                                        const Color(0xFFB2FFF3)
-                                            .withOpacity(0.30),
-                                        Colors.white.withOpacity(0.35),
+                                        colors: [
+                                        Colors.white.withAlpha((0.55 * 255).round()),
+                                        const Color(0xFFF6E6EB).withAlpha((0.30 * 255).round()),
+                                        Colors.white.withAlpha((0.35 * 255).round()),
                                       ],
                                     ),
                                     border: Border.all(
-                                      color: Colors.white.withOpacity(0.45),
+                                      color: Colors.white.withValues(alpha: 0.45),
                                       width: 1.4,
                                     ),
                                   ),
@@ -222,6 +222,7 @@ class _NavItem extends StatelessWidget {
       onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           TweenAnimationBuilder<double>(
             tween: Tween(
@@ -234,15 +235,17 @@ class _NavItem extends StatelessWidget {
                 Transform.scale(scale: scale, child: child),
             child: Icon(
               icon,
-              size: 24,
+              size: 20,
               color: isActive ? activeColor : inactiveColor,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           Text(
             label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 11,
               fontWeight: isActive ? FontWeight.w700 : FontWeight.w400,
               color: isActive ? activeColor : inactiveColor,
             ),

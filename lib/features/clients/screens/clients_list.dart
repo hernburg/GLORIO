@@ -5,6 +5,8 @@ import '../../../data/repositories/clients_repo.dart';
 import '../../../ui/app_card.dart';
 import '../../../ui/add_button.dart';
 import 'client_edit_screen.dart';
+import '../../../design/glorio_colors.dart';
+import '../../../design/glorio_spacing.dart';
 
 class ClientsListScreen extends StatelessWidget {
   const ClientsListScreen({super.key});
@@ -14,9 +16,14 @@ class ClientsListScreen extends StatelessWidget {
     final repo = context.watch<ClientsRepo>();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F3EE),
+      backgroundColor: GlorioColors.background,
       body: ListView.separated(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.only(
+          left: GlorioSpacing.page,
+          right: GlorioSpacing.page,
+          top: GlorioSpacing.page,
+          bottom: GlorioSpacing.page,
+        ),
         itemCount: repo.clients.length,
         separatorBuilder: (_, __) => const SizedBox(height: 12),
         itemBuilder: (context, i) {

@@ -1,11 +1,11 @@
 import 'package:hive_flutter/hive_flutter.dart';
 
-import '../data/models/client.dart';
-import '../data/models/assembled_product.dart';
-import '../data/models/ingredient.dart';
-import '../data/models/materialitem.dart';
-import '../data/models/supply.dart';
-import '../data/models/sold_ingredient.dart';
+import 'package:flower_accounting_app/data/models/client.dart';
+import 'package:flower_accounting_app/data/models/assembled_product.dart';
+import 'package:flower_accounting_app/data/models/ingredient.dart';
+import 'package:flower_accounting_app/data/models/materialitem.dart';
+import 'package:flower_accounting_app/data/models/supply.dart';
+import 'package:flower_accounting_app/data/models/sold_ingredient.dart';
 
 class HiveInit {
   static Future<void> init() async {

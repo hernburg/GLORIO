@@ -23,6 +23,10 @@ class SupplyRepository extends ChangeNotifier {
 
   List<Supply> get supplies => _box.values.toList();
 
+  Supply? getById(String id) {
+    return _box.get(id);
+  }
+
   // ---------------------------------------------------------------------------
   // ADD SUPPLY
   // ---------------------------------------------------------------------------
@@ -66,6 +70,66 @@ class SupplyRepository extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Update an existing supply and adjust materials quantities based on deltas
+  void updateSupply({
+    required String id,
+    required DateTime date,
+    required List<SupplyItem> items,
+  }) {
+    final existing = _box.get(id);
+
+    // compute deltas per materialKey
+    final Map<String, double> oldMap = {};
+    if (existing != null) {
+      for (final it in existing.items) {
+        oldMap[it.materialKey] = (oldMap[it.materialKey] ?? 0) + it.quantity;
+      }
+    }
+
+    final Map<String, double> newMap = {};
+    for (final it in items) {
+      newMap[it.materialKey] = (newMap[it.materialKey] ?? 0) + it.quantity;
+    }
+
+    // apply deltas to materialsRepo
+    for (final entry in newMap.entries) {
+      final key = entry.key;
+      final newQty = entry.value;
+      final oldQty = oldMap[key] ?? 0.0;
+      final delta = newQty - oldQty;
+
+      if (delta > 0) {
+        // increase available materials
+        materialsRepo.upsertFromSupplyItem(
+          materialKey: key,
+          name: items.firstWhere((e) => e.materialKey == key).name,
+          categoryId: items.firstWhere((e) => e.materialKey == key).categoryId,
+          categoryName: items.firstWhere((e) => e.materialKey == key).categoryName,
+          quantity: delta,
+          costPerUnit: items.firstWhere((e) => e.materialKey == key).costPerUnit,
+          supplyId: id,
+        );
+      } else if (delta < 0) {
+        // reduce available materials
+        materialsRepo.reduceQuantity(key, -delta);
+      }
+    }
+
+    // handle keys that existed before but removed in new items
+    for (final entry in oldMap.entries) {
+      final key = entry.key;
+      if (!newMap.containsKey(key)) {
+        // removed entirely -> subtract old amount
+        materialsRepo.reduceQuantity(key, entry.value);
+      }
+    }
+
+    // persist updated supply
+    final updated = Supply(id: id, date: date, items: items);
+    _box.put(id, updated);
+    notifyListeners();
+  }
+
   // ---------------------------------------------------------------------------
   // STOCK CALCULATION
   // ---------------------------------------------------------------------------
@@ -96,6 +160,7 @@ class SupplyRepository extends ChangeNotifier {
     required String materialKey,
     required double qty,
   }) {
+    debugPrint('SupplyRepository.consumeMaterial: material=$materialKey qty=$qty');
     final sortedSupplies = [...supplies]
       ..sort((a, b) => a.date.compareTo(b.date));
 

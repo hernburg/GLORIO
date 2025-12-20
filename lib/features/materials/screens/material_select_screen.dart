@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../data/repositories/materials_repo.dart';
 import '../../../data/models/materialitem.dart';
+import '../../../design/glorio_colors.dart';
+import '../../../design/glorio_spacing.dart';
 
 class MaterialSelectScreen extends StatelessWidget {
   final Function(MaterialItem) onSelect;
@@ -16,18 +18,33 @@ class MaterialSelectScreen extends StatelessWidget {
     final materials = context.watch<MaterialsRepo>().materials;
 
     return Scaffold(
+      backgroundColor: GlorioColors.background,
       appBar: AppBar(
+        backgroundColor: GlorioColors.background,
         title: const Text('Выбор материала'),
         centerTitle: true,
       ),
       body: materials.isEmpty
-          ? const Center(
-              child: Text(
-                'Нет материалов на складе',
-                style: TextStyle(fontSize: 18, color: Colors.grey),
+          ? Center(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: GlorioSpacing.page,
+                  right: GlorioSpacing.page,
+                  top: MediaQuery.of(context).viewPadding.top + GlorioSpacing.page,
+                ),
+                child: const Text(
+                  'Нет материалов на складе',
+                  style: TextStyle(fontSize: 18, color: Colors.grey),
+                ),
               ),
             )
           : ListView.builder(
+              padding: EdgeInsets.only(
+                left: GlorioSpacing.page,
+                right: GlorioSpacing.page,
+                top: MediaQuery.of(context).viewPadding.top + GlorioSpacing.page,
+                bottom: GlorioSpacing.page,
+              ),
               itemCount: materials.length,
               itemBuilder: (context, index) {
                 final m = materials[index];

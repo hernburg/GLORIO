@@ -78,6 +78,13 @@ final List<RouteBase> appRoutes = [
         path: '/supplies/new',
         builder: (context, state) => const SupplyCreateScreen(),
       ),
+      GoRoute(
+        path: '/supplies/edit/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return SupplyCreateScreen(editId: id);
+        },
+      ),
 
       /// SHOWCASE
       GoRoute(

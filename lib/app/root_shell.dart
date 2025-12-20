@@ -35,6 +35,9 @@ class RootShell extends StatelessWidget {
     }
 
     return Scaffold(
+      // Allow the child's background to extend under the bottom nav bar
+      backgroundColor: Colors.transparent,
+      extendBody: true,
       body: child,
 
       // 🔥 Подключаем новый GLORIO Telegram-style таббар

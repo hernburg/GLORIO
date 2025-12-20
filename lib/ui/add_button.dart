@@ -1,5 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../design/glorio_colors.dart';
+import '../design/glorio_spacing.dart';
 
 class AddButton extends StatelessWidget {
   final VoidCallback onTap;
@@ -8,33 +10,40 @@ class AddButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 64,
-        height: 64,
+    const double lift = 100;
+
+    return SizedBox(
+      width: 64,
+      height: 64 + lift,
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            width: 64,
+            height: 64,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color.fromARGB(255, 0, 0, 0).withValues(alpha: 0.35),
-              const Color.fromARGB(255, 255, 255, 255).withValues(alpha: 0.50),
+              GlorioColors.accent.withAlpha((0.85 * 255).round()),
+              GlorioColors.pale.withAlpha((0.9 * 255).round()),
             ],
           ),
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.6),
+            color: Colors.white.withAlpha((0.6 * 255).round()),
             width: 1.4,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.lightBlueAccent.withValues(alpha: 0.4),
-              blurRadius: 14,
-              offset: const Offset(0, 6),
+              color: const Color(0xFFBEE9FF).withAlpha((0.28 * 255).round()),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
             ),
             BoxShadow(
-              color: Colors.white.withValues(alpha: 0.8),
+              color: Colors.white.withAlpha((0.85 * 255).round()),
               blurRadius: 10,
               offset: const Offset(-2, -2),
             ),
@@ -56,6 +65,8 @@ class AddButton extends StatelessWidget {
               ),
             ),
           ),
+        ),
+        ),
         ),
       ),
     );

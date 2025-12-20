@@ -9,6 +9,8 @@ import '../../../ui/app_button.dart';
 
 import '../../../data/models/assembled_product.dart';
 import '../../../data/repositories/materials_repo.dart';
+import '../../../design/glorio_colors.dart';
+import '../../../design/glorio_spacing.dart';
 
 class AssembledDetailsScreen extends StatelessWidget {
   final AssembledProduct item;
@@ -34,9 +36,9 @@ class AssembledDetailsScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F3EE),
+      backgroundColor: GlorioColors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF6F3EE),
+        backgroundColor: GlorioColors.background,
         elevation: 0,
         iconTheme: const IconThemeData(color: Color(0xFF2E2E2E)),
         title: const Text(
@@ -48,7 +50,12 @@ class AssembledDetailsScreen extends StatelessWidget {
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.only(
+          left: GlorioSpacing.page,
+          right: GlorioSpacing.page,
+          top: MediaQuery.of(context).viewPadding.top + GlorioSpacing.page,
+          bottom: GlorioSpacing.page,
+        ),
         children: [
           /// Фото
           AppCard(

@@ -7,6 +7,8 @@ import '../../../ui/app_input.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
 import 'relative_form.dart';
+import '../../../design/glorio_colors.dart';
+import '../../../design/glorio_spacing.dart';
 
 class ClientEditScreen extends StatefulWidget {
   final Client? client;
@@ -62,9 +64,14 @@ class _ClientEditScreenState extends State<ClientEditScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F3EE),
+      backgroundColor: GlorioColors.background,
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.only(
+          left: GlorioSpacing.page,
+          right: GlorioSpacing.page,
+          top: GlorioSpacing.page,
+          bottom: GlorioSpacing.page,
+        ),
         children: [
           const SizedBox(height: 24),
 
