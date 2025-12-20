@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'app_router.dart';
 import '../design/glorio_theme.dart';
-import '../app/router.dart';
-import '../ui/widgets/mini_back_button.dart';
+import '../core/error_service.dart';
 
 class FlowerApp extends StatelessWidget {
   const FlowerApp({super.key});
@@ -17,23 +16,24 @@ class FlowerApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: GlorioTheme.theme(),
       builder: (context, child) {
-        final navigator = rootNavigatorKey.currentState;
-        final canPop = navigator?.canPop() ?? false;
+        final childWidget = child ?? const SizedBox.shrink();
+        final err = context.watch<ErrorService>().lastError;
 
-        // If there's nothing to pop, just return the child.
-  if (child == null) return const SizedBox.shrink();
-  if (!canPop) return child;
-
-        final padding = MediaQuery.of(context).padding;
+        if (err == null) return childWidget;
 
         return Stack(
           children: [
-            child,
+            childWidget,
             Positioned(
-              top: padding.top + 8,
-              left: 12,
-              child: MiniBackButton(
-                onTap: () => navigator?.maybePop(),
+              left: 0,
+              right: 0,
+              top: MediaQuery.of(context).padding.top,
+              child: Material(
+                color: Colors.red.shade700,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(err, style: const TextStyle(color: Colors.white)),
+                ),
               ),
             ),
           ],

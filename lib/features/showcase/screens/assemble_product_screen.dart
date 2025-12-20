@@ -19,9 +19,8 @@ import '../../../design/glorio_text.dart';
 import '../../../data/models/ingredient.dart';
 import '../../../data/models/assembled_product.dart';
 
-import '../../../data/repositories/materials_repo.dart';
 import '../../../data/repositories/showcase_repo.dart';
-import '../../../data/repositories/supply_repo.dart';
+import '../../../data/repositories/materials_repo.dart';
 
 import 'ingredient_selector.dart';
 
@@ -98,8 +97,6 @@ class _AssembleProductScreenState extends State<AssembleProductScreen> {
     }
 
     final showcase = context.read<ShowcaseRepo>();
-    final supplyRepo = context.read<SupplyRepository>();
-    final materialsRepo = context.read<MaterialsRepo>();
 
     final isEditing = widget.editProduct != null || widget.editId != null;
 
@@ -122,32 +119,8 @@ class _AssembleProductScreenState extends State<AssembleProductScreen> {
         }
       }
 
-      final newMap = <String, double>{};
-      for (final ing in ingredients) {
-        newMap[ing.materialKey] = ing.quantity;
-      }
-
-      final allKeys = {...oldMap.keys, ...newMap.keys};
-      for (final key in allKeys) {
-        final oldQty = oldMap[key] ?? 0.0;
-        final newQty = newMap[key] ?? 0.0;
-        final delta = newQty - oldQty;
-        if (delta > 0) {
-          debugPrint('AssembleProductScreen: editing -> consuming delta for $key: $delta (old: $oldQty -> new: $newQty)');
-          supplyRepo.consumeMaterial(materialKey: key, qty: delta);
-        } else if (delta < 0) {
-          debugPrint('AssembleProductScreen: editing -> returning for $key: ${-delta} (old: $oldQty -> new: $newQty)');
-          materialsRepo.returnQuantity(key, -delta);
-        }
-      }
-
       showcase.updateProduct(updated);
     } else {
-      for (final ing in ingredients) {
-        debugPrint('AssembleProductScreen: creating -> consuming ${ing.quantity} of ${ing.materialKey}');
-        supplyRepo.consumeMaterial(materialKey: ing.materialKey, qty: ing.quantity);
-      }
-
       showcase.addProduct(AssembledProduct(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         name: name,
