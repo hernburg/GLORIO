@@ -36,58 +36,142 @@ class _SupplyItemEditorState extends State<SupplyItemEditor> {
 
   Future<void> _pickCategory() async {
     final repo = context.read<CategoryRepo>();
-    final categories = repo.categories..sort((a, b) => a.name.compareTo(b.name));
-
     final result = await showModalBottomSheet<Category>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       builder: (ctx) {
         final controller = TextEditingController();
-        return SafeArea(
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: GlorioSpacing.page,
-              right: GlorioSpacing.page,
-              top: GlorioSpacing.page,
-              bottom: GlorioSpacing.page + MediaQuery.of(ctx).viewInsets.bottom,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Категория', style: GlorioText.heading),
-                const SizedBox(height: GlorioSpacing.gapSmall),
-                Flexible(
-                  child: ListView.separated(
-                    shrinkWrap: true,
-                    itemCount: categories.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 8),
-                    itemBuilder: (_, i) {
-                      final cat = categories[i];
-                      return AppCard(
-                        onTap: () => Navigator.pop(ctx, cat),
-                        child: Text(cat.name, style: GlorioText.body),
-                      );
-                    },
+        return StatefulBuilder(
+          builder: (ctx, setModalState) {
+            bool showArchived = false;
+            void rebuild() => setModalState(() {});
+
+            return StatefulBuilder(
+              builder: (ctx, innerSetState) {
+                // use innerSetState to keep showArchived state inside modal
+                showArchived = showArchived;
+                final active = [...repo.activeCategories]..sort((a, b) => a.name.compareTo(b.name));
+                final archived = [...repo.archivedCategories]..sort((a, b) => a.name.compareTo(b.name));
+
+                return SafeArea(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      left: GlorioSpacing.page,
+                      right: GlorioSpacing.page,
+                      top: MediaQuery.of(ctx).viewPadding.top + GlorioSpacing.page,
+                      bottom: GlorioSpacing.page + MediaQuery.of(ctx).viewInsets.bottom,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            Text('Категория', style: GlorioText.heading),
+                            const Spacer(),
+                            if (archived.isNotEmpty)
+                              TextButton.icon(
+                                onPressed: () => innerSetState(() => showArchived = !showArchived),
+                                icon: Icon(
+                                  showArchived ? Icons.expand_less : Icons.archive_outlined,
+                                  size: 18,
+                                  color: GlorioColors.textMuted,
+                                ),
+                                label: Text(
+                                  showArchived ? 'Скрыть архив' : 'Показать архив',
+                                  style: GlorioText.muted,
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: GlorioSpacing.gapSmall),
+                        Flexible(
+                          child: ListView.separated(
+                            shrinkWrap: true,
+                            itemCount: active.length,
+                            separatorBuilder: (_, __) => const SizedBox(height: 8),
+                            itemBuilder: (_, i) {
+                              final cat = active[i];
+                              return AppCard(
+                                onTap: () => Navigator.pop(ctx, cat),
+                                child: Row(
+                                  children: [
+                                    Expanded(child: Text(cat.name, style: GlorioText.body)),
+                                    IconButton(
+                                      icon: const Icon(Icons.archive_outlined, size: 20),
+                                      color: GlorioColors.textMuted,
+                                      tooltip: 'В архив',
+                                      onPressed: () {
+                                        repo.archive(cat.id);
+                                        rebuild();
+                                        innerSetState(() {});
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        if (showArchived && archived.isNotEmpty) ...[
+                          const SizedBox(height: GlorioSpacing.gapSmall),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text('Архив', style: GlorioText.muted),
+                          ),
+                          const SizedBox(height: 8),
+                          Flexible(
+                            child: ListView.separated(
+                              shrinkWrap: true,
+                              itemCount: archived.length,
+                              separatorBuilder: (_, __) => const SizedBox(height: 8),
+                              itemBuilder: (_, i) {
+                                final cat = archived[i];
+                                return AppCard(
+                                  onTap: () => Navigator.pop(ctx, cat),
+                                  child: Row(
+                                    children: [
+                                      Expanded(child: Text(cat.name, style: GlorioText.body)),
+                                      IconButton(
+                                        icon: const Icon(Icons.unarchive_outlined, size: 20),
+                                        color: GlorioColors.textMuted,
+                                        tooltip: 'Вернуть из архива',
+                                        onPressed: () {
+                                          repo.restore(cat.id);
+                                          rebuild();
+                                          innerSetState(() {});
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: GlorioSpacing.gap),
+                        AppInput(
+                          controller: controller,
+                          hint: 'Новая категория',
+                        ),
+                        const SizedBox(height: GlorioSpacing.gapSmall),
+                        AppButton(
+                          text: 'Создать и выбрать',
+                          onTap: () {
+                            final name = controller.text.trim();
+                            if (name.isEmpty) return;
+                            final created = repo.addCategory(name);
+                            rebuild();
+                            Navigator.pop(ctx, created);
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: GlorioSpacing.gap),
-                AppInput(
-                  controller: controller,
-                  hint: 'Новая категория',
-                ),
-                const SizedBox(height: GlorioSpacing.gapSmall),
-                AppButton(
-                  text: 'Создать и выбрать',
-                  onTap: () {
-                    final name = controller.text.trim();
-                    if (name.isEmpty) return;
-                    final created = repo.addCategory(name);
-                    Navigator.pop(ctx, created);
-                  },
-                ),
-              ],
-            ),
-          ),
+                );
+              },
+            );
+          },
         );
       },
     );

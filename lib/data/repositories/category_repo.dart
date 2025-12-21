@@ -12,6 +12,9 @@ class CategoryRepo extends ChangeNotifier {
       ? _box!.values.toList()
       : const [];
 
+  List<Category> get activeCategories => categories.where((c) => !c.isArchived).toList();
+  List<Category> get archivedCategories => categories.where((c) => c.isArchived).toList();
+
   Future<void> init() async {
     if (_isReady) return;
     _box = await Hive.openBox<Category>(boxName);
@@ -35,11 +38,21 @@ class CategoryRepo extends ChangeNotifier {
     final trimmed = name.trim();
     final id = _makeSlug(trimmed);
     final uniqueId = _ensureUnique(id);
-    final category = Category(id: uniqueId, name: trimmed);
+    final category = Category(id: uniqueId, name: trimmed, isArchived: false);
     _box?.put(uniqueId, category);
     notifyListeners();
     return category;
   }
+
+  void setArchived(String id, bool value) {
+    final existing = getById(id);
+    if (existing == null) return;
+    _box?.put(id, existing.copyWith(isArchived: value));
+    notifyListeners();
+  }
+
+  void archive(String id) => setArchived(id, true);
+  void restore(String id) => setArchived(id, false);
 
   List<Category> _seedCategories() {
     const seeds = [
