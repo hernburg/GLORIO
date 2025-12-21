@@ -8,7 +8,7 @@ part of 'supply.dart';
 
 class SupplyAdapter extends TypeAdapter<Supply> {
   @override
-  final int typeId = 6;
+  final int typeId = 7;
 
   @override
   Supply read(BinaryReader reader) {
@@ -18,36 +18,21 @@ class SupplyAdapter extends TypeAdapter<Supply> {
     };
     return Supply(
       id: fields[0] as String,
-      name: fields[1] as String,
-      quantity: fields[2] as double,
-      usedInBouquets: fields[3] as double,
-      writtenOff: fields[4] as double,
-      purchasePrice: fields[5] as double,
-      supplyDate: fields[6] as DateTime,
-      photoUrl: fields[7] as String?,
+      date: fields[1] as DateTime,
+      items: (fields[2] as List).cast<SupplyItem>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, Supply obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(3)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
-      ..write(obj.name)
+      ..write(obj.date)
       ..writeByte(2)
-      ..write(obj.quantity)
-      ..writeByte(3)
-      ..write(obj.usedInBouquets)
-      ..writeByte(4)
-      ..write(obj.writtenOff)
-      ..writeByte(5)
-      ..write(obj.purchasePrice)
-      ..writeByte(6)
-      ..write(obj.supplyDate)
-      ..writeByte(7)
-      ..write(obj.photoUrl);
+      ..write(obj.items);
   }
 
   @override

@@ -1,63 +1,36 @@
 import 'package:hive/hive.dart';
+import 'supply_item.dart';
 
 part 'supply.g.dart';
 
-@HiveType(typeId: 6)
+@HiveType(typeId: 7) // проверь свой typeId
 class Supply extends HiveObject {
   @HiveField(0)
   final String id;
 
   @HiveField(1)
-  final String name;
+  final DateTime date;
 
   @HiveField(2)
-  final double quantity;
-
-  @HiveField(3)
-  final double usedInBouquets;
-
-  @HiveField(4)
-  final double writtenOff;
-
-  @HiveField(5)
-  final double purchasePrice;
-
-  @HiveField(6)
-  final DateTime supplyDate;
-
-  @HiveField(7)
-  final String? photoUrl;
+  final List<SupplyItem> items;
 
   Supply({
     required this.id,
-    required this.name,
-    required this.quantity,
-    required this.usedInBouquets,
-    required this.writtenOff,
-    required this.purchasePrice,
-    required this.supplyDate,
-    this.photoUrl,
+    required this.date,
+    required this.items,
   });
 
+  double get totalCost => items.fold(0, (sum, i) => sum + i.totalCost);
   Supply copyWith({
-    String? id,
-    String? name,
-    double? quantity,
-    double? usedInBouquets,
-    double? writtenOff,
-    double? purchasePrice,
-    DateTime? supplyDate,
-    String? photoUrl,
-  }) {
-    return Supply(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      quantity: quantity ?? this.quantity,
-      usedInBouquets: usedInBouquets ?? this.usedInBouquets,
-      writtenOff: writtenOff ?? this.writtenOff,
-      purchasePrice: purchasePrice ?? this.purchasePrice,
-      supplyDate: supplyDate ?? this.supplyDate,
-      photoUrl: photoUrl ?? this.photoUrl,
-    );
-  }
+  List<SupplyItem>? items,
+  DateTime? date,
+}) {
+  return Supply(
+    id: id,
+    date: date ?? this.date,
+    items: items ?? this.items,
+  );
+}
+double get totalQuantity =>
+    items.fold(0.0, (sum, item) => sum + item.quantity);
 }

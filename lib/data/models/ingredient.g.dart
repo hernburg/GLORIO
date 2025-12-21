@@ -8,7 +8,7 @@ part of 'ingredient.dart';
 
 class IngredientAdapter extends TypeAdapter<Ingredient> {
   @override
-  final int typeId = 3;
+  final int typeId = 21;
 
   @override
   Ingredient read(BinaryReader reader) {
@@ -17,7 +17,7 @@ class IngredientAdapter extends TypeAdapter<Ingredient> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return Ingredient(
-      materialId: fields[0] as String,
+      materialKey: fields[0] as String,
       quantity: fields[1] as double,
       costPerUnit: fields[2] as double,
     );
@@ -28,7 +28,7 @@ class IngredientAdapter extends TypeAdapter<Ingredient> {
     writer
       ..writeByte(3)
       ..writeByte(0)
-      ..write(obj.materialId)
+      ..write(obj.materialKey)
       ..writeByte(1)
       ..write(obj.quantity)
       ..writeByte(2)

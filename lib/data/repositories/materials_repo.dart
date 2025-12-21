@@ -5,50 +5,120 @@ import '../models/materialitem.dart';
 class MaterialsRepo extends ChangeNotifier {
   static const boxName = 'materialsBox';
 
-  late Box<MaterialItem> _box;
+  Box<MaterialItem>? _box;
+  bool _isReady = false;
 
-  List<MaterialItem> get materials => _box.values.toList();
+  // ---------------------------------------------------------------------------
+  // SAFE GETTERS
+  // ---------------------------------------------------------------------------
+  bool get isReady => _isReady;
 
+  List<MaterialItem> get materials {
+    if (!_isReady || _box == null) return [];
+    return _box!.values.toList();
+  }
+
+  // ---------------------------------------------------------------------------
+  // INIT
+  // ---------------------------------------------------------------------------
   Future<void> init() async {
+    if (_isReady) return;
+
     _box = await Hive.openBox<MaterialItem>(boxName);
+    _isReady = true;
     notifyListeners();
   }
 
+  // ---------------------------------------------------------------------------
+  // CRUD
+  // ---------------------------------------------------------------------------
   void addMaterial(MaterialItem item) {
-    _box.put(item.id, item);
+    if (!_isReady || _box == null) return;
+    _box!.put(item.id, item); // id == materialKey
     notifyListeners();
   }
 
-  MaterialItem? getById(String id) {
-    return _box.get(id);
+  /// 🔑 ОСНОВНОЙ МЕТОД
+  MaterialItem? getByKey(String materialKey) {
+    if (!_isReady || _box == null) return null;
+    return _box!.get(materialKey
+    );
   }
 
-  void reduceQuantity(String id, double qty) {
-    final m = _box.get(id);
+  bool exists(String materialKey) {
+    if (!_isReady || _box == null) return false;
+    return _box!.containsKey(materialKey);
+  }
+
+  void reduceQuantity(String materialKey, double qty) {
+    if (!_isReady || _box == null) return;
+
+    final m = _box!.get(materialKey);
     if (m == null || m.isInfinite) return;
 
-    final double newQty =
-        (m.quantity - qty).clamp(0, double.infinity).toDouble();
+    final newQty = (m.quantity - qty).clamp(0, double.infinity).toDouble();
 
-    _box.put(id, m.copyWith(quantity: newQty));
+    _box!.put(materialKey, m.copyWith(quantity: newQty));
     notifyListeners();
   }
 
-  void returnQuantity(String id, double qty) {
-    final m = _box.get(id);
+  void returnQuantity(String materialKey, double qty) {
+    if (!_isReady || _box == null) return;
+
+    final m = _box!.get(materialKey);
     if (m == null || m.isInfinite) return;
 
-    final double newQty = (m.quantity + qty).toDouble();
-
-    _box.put(id, m.copyWith(quantity: newQty));
+    debugPrint('MaterialsRepo.returnQuantity: material=$materialKey qty=$qty old=${m.quantity} -> new=${m.quantity + qty}');
+    _box!.put(materialKey, m.copyWith(quantity: m.quantity + qty));
     notifyListeners();
   }
 
-  void removeMaterial(String id) {
-    _box.delete(id);
+  void removeMaterial(String materialKey) {
+    if (!_isReady || _box == null) return;
+    _box!.delete(materialKey);
     notifyListeners();
   }
-  bool exists(String id) {
-  return _box.containsKey(id);
-}
+
+  // ---------------------------------------------------------------------------
+  // UPSERT FROM SUPPLY
+  // ---------------------------------------------------------------------------
+  void upsertFromSupplyItem({
+    required String materialKey,
+    required String name,
+    required String categoryId,
+    required String categoryName,
+    required double quantity,
+    required double costPerUnit,
+    required String supplyId,
+  }) {
+    if (!_isReady || _box == null) return;
+
+    final existing = _box!.get(materialKey);
+
+    if (existing == null) {
+      final item = MaterialItem(
+        id: materialKey, // 🔑 ключ
+        name: name,
+        quantity: quantity,
+        costPerUnit: costPerUnit,
+        supplyId: supplyId,
+        categoryId: categoryId,
+        categoryName: categoryName,
+        isInfinite: false,
+        photoUrl: null,
+      );
+
+      _box!.put(materialKey, item);
+    } else {
+      _box!.put(
+        materialKey,
+        existing.copyWith(
+          quantity: existing.quantity + quantity,
+          costPerUnit: costPerUnit,
+        ),
+      );
+    }
+
+    notifyListeners();
+  }
 }

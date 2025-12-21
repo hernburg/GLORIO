@@ -1,7 +1,6 @@
 import 'package:hive/hive.dart';
 import 'assembled_product.dart';
 import 'sold_ingredient.dart';
-import 'ingredient.dart';
 
 part 'sale.g.dart';
 
@@ -34,6 +33,15 @@ class Sale {
   @HiveField(8)
   final String soldBy;
 
+  @HiveField(9)
+  final int usedPoints;
+
+  @HiveField(10)
+  final double finalTotal;
+
+  @HiveField(11)
+  final String paymentMethod;
+
   Sale({
     required this.id,
     required this.product,
@@ -42,9 +50,13 @@ class Sale {
     required this.date,
     required this.ingredients,
     required this.soldBy,
+    this.usedPoints = 0,
+    double? finalTotal,
+    this.paymentMethod = 'Наличные',
     this.clientId,
     this.clientName,
-  });
+  }) : finalTotal = finalTotal ?? (price * quantity);
 
-  double get total => price * quantity;
+  double get originalTotal => price * quantity;
+  double get total => finalTotal;
 }

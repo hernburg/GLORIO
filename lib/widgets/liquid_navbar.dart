@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../design/glorio_colors.dart';
 
 class LiquidNavbar extends StatelessWidget {
   const LiquidNavbar({
@@ -21,16 +22,16 @@ class LiquidNavbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final highlightColor = const Color(0xFF0D6B53);
+    final highlightColor = GlorioColors.accent;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.25),
+        color: GlorioColors.card.withAlpha((0.25 * 255).round()),
         borderRadius: BorderRadius.circular(26),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withAlpha((0.08 * 255).round()),
             blurRadius: 16,
             offset: const Offset(0, 10),
           ),
@@ -53,22 +54,14 @@ class LiquidNavbar extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      item.icon,
-                      size: 24,
-                      color: isActive
-                          ? highlightColor
-                          : const Color(0xFF0D1B26),
-                    ),
+                    Icon(item.icon, size: 24, color: isActive ? highlightColor : GlorioColors.textPrimary),
                     const SizedBox(height: 6),
                     Text(
                       item.label,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: isActive
-                            ? highlightColor
-                            : const Color(0xFF0D1B26).withOpacity(0.7),
+                        color: isActive ? highlightColor : GlorioColors.textMuted,
                       ),
                     ),
                   ],

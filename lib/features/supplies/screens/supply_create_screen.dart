@@ -1,183 +1,144 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../data/models/supply.dart';
+import '../../../data/models/supply_item.dart';
 import '../../../data/repositories/supply_repo.dart';
-import '../../../data/repositories/materials_repo.dart';
-import '../../../data/models/materialitem.dart';
+
+import '../../../ui/app_card.dart';
+import '../../../ui/app_button.dart';
+
+import '../widgets/supply_item_editor.dart';
+import '../../../design/glorio_colors.dart';
+import '../../../design/glorio_spacing.dart';
+import '../../../design/glorio_text.dart';
 
 class SupplyCreateScreen extends StatefulWidget {
-  const SupplyCreateScreen({super.key});
+  final String? editId;
+
+  const SupplyCreateScreen({super.key, this.editId});
 
   @override
   State<SupplyCreateScreen> createState() => _SupplyCreateScreenState();
 }
 
 class _SupplyCreateScreenState extends State<SupplyCreateScreen> {
-  final nameCtrl = TextEditingController();
-  final qtyCtrl = TextEditingController();
-  final priceCtrl = TextEditingController();
+  final List<SupplyItem> items = [];
+  DateTime? _date;
+  bool get isEditing => widget.editId != null;
 
-  XFile? pickedImage;
-
-  // 📸 Выбор фото
-  Future<void> pickImage() async {
-    final picker = ImagePicker();
-    final img = await picker.pickImage(source: ImageSource.gallery);
-
-    if (img != null) {
-      setState(() => pickedImage = img);
+  @override
+  void initState() {
+    super.initState();
+    if (isEditing) {
+      final repo = context.read<SupplyRepository>();
+      final s = repo.getById(widget.editId!);
+      if (s != null) {
+        _date = s.date;
+        items.addAll(s.items.map((e) => e.copyWith()));
+      }
     }
+    _date ??= DateTime.now();
   }
 
-  // 💾 Сохранение поставки
-  void save() {
-    final name = nameCtrl.text.trim();
-    final qty = double.tryParse(qtyCtrl.text) ?? 0;
-    final price = double.tryParse(priceCtrl.text) ?? 0;
-
-    if (name.isEmpty || qty <= 0 || price <= 0) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Заполните все поля')));
+  // ---------------------------------------------------------------------------
+  // SAVE SUPPLY
+  // ---------------------------------------------------------------------------
+  void _save() {
+    if (items.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Добавьте хотя бы одну позицию')),
+      );
       return;
     }
 
-    final id = DateTime.now().millisecondsSinceEpoch.toString();
+    final repo = context.read<SupplyRepository>();
 
-    final supply = Supply(
-      id: id,
-      name: name,
-      quantity: qty,
-      purchasePrice: price,
-      supplyDate: DateTime.now(),
-      usedInBouquets: 0,
-      writtenOff: 0,
-      photoUrl: pickedImage?.path,
-    );
+    if (isEditing) {
+      repo.updateSupply(id: widget.editId!, date: _date ?? DateTime.now(), items: items);
+    } else {
+      repo.addSupply(date: _date ?? DateTime.now(), items: items);
+    }
 
-    final supplies = context.read<SupplyRepository>();
-    final materials = context.read<MaterialsRepo>();
-
-    supplies.addSupply(supply);
-
-    materials.addMaterial(
-      MaterialItem(
-        id: id,
-        name: name,
-        quantity: qty,
-        costPerUnit: price,
-        supplyId: id,
-        photoUrl: pickedImage?.path,
-        categoryId: 'flowers',
-        categoryName: 'Цветы',
-        isInfinite: false,
-      ),
-    );
-
-    context.pop();
+    Navigator.pop(context);
   }
 
-  // 🎨 Стиль полей ввода
-  InputDecoration _decor(String label) {
-    return InputDecoration(
-      labelText: label,
-      filled: true,
-      fillColor: Colors.white.withValues(alpha: 0.28),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(
-          color: Colors.white.withValues(alpha: 0.55),
-          width: 1.2,
-        ),
+  // ---------------------------------------------------------------------------
+  // ADD POSITION
+  // ---------------------------------------------------------------------------
+  Future<void> _addItem() async {
+    final result = await showModalBottomSheet<SupplyItem>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(
-          color: Colors.white.withValues(alpha: 0.55),
-          width: 1.2,
-        ),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(
-          color: Colors.white.withValues(alpha: 0.55),
-          width: 1.2,
-        ),
-      ),
-      labelStyle: const TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w500,
-      ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+      builder: (_) => const SupplyItemEditor(),
     );
+
+    if (result != null) {
+      setState(() {
+        items.add(result);
+      });
+    }
   }
 
+  // ---------------------------------------------------------------------------
+  // UI
+  // ---------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Новая поставка')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // ---------- БЛОК С ФОТО ----------
-            GestureDetector(
-              onTap: pickImage,
-              child: Container(
-                height: 150,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  color: Colors.grey.shade300,
-                  image: pickedImage != null
-                      ? DecorationImage(
-                          image: FileImage(File(pickedImage!.path)),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
+      backgroundColor: GlorioColors.background,
+  appBar: AppBar(backgroundColor: GlorioColors.background, title: Text('Новая поставка', style: GlorioText.heading)),
+      body: ListView(
+          padding: EdgeInsets.only(
+            left: GlorioSpacing.page,
+            right: GlorioSpacing.page,
+            top: MediaQuery.of(context).viewPadding.top + GlorioSpacing.page,
+            bottom: GlorioSpacing.page,
+          ),
+        children: [
+          // -------------------------------------------------
+          // POSITIONS
+          // -------------------------------------------------
+          if (items.isEmpty) Text('Позиции не добавлены', style: GlorioText.muted),
+
+          ...items.map(
+            (i) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(i.name, style: GlorioText.heading),
+                    const SizedBox(height: 4),
+                    Text('${i.categoryName} • ${i.quantity} × ${i.costPerUnit} ₽', style: GlorioText.muted),
+                  ],
                 ),
-                child: pickedImage == null
-                    ? const Center(
-                        child: Icon(
-                          Icons.add_a_photo,
-                          size: 40,
-                          color: Colors.grey,
-                        ),
-                      )
-                    : null,
               ),
             ),
+          ),
 
-            const SizedBox(height: 20),
+          const SizedBox(height: 12),
 
-            TextField(controller: nameCtrl, decoration: _decor('Название товара')),
-            const SizedBox(height: 18),
+          // -------------------------------------------------
+          // ADD POSITION
+          // -------------------------------------------------
+          AppButton(
+            text: 'Добавить позицию',
+            onTap: _addItem,
+          ),
 
-            TextField(
-              controller: qtyCtrl,
-              decoration: _decor('Количество'),
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 18),
+          const SizedBox(height: 24),
 
-            TextField(
-              controller: priceCtrl,
-              decoration: _decor('Цена закупки'),
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 26),
-
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: save,
-                child: const Text('Сохранить позицию'),
-              ),
-            ),
-          ],
-        ),
+          // -------------------------------------------------
+          // SAVE SUPPLY
+          // -------------------------------------------------
+          AppButton(
+            text: 'Сохранить поставку',
+            onTap: _save,
+          ),
+        ],
       ),
     );
   }

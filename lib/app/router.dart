@@ -1,4 +1,3 @@
-import 'package:flower_accounting_app/features/clients/screens/client_edit_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -9,9 +8,8 @@ import '../features/welcome/welcome_screen.dart';
 // --- SUPPLIES ---
 import '../features/supplies/screens/supplies_list.dart';
 import '../features/supplies/screens/supply_create_screen.dart';
-import '../features/supplies/screens/supply_edit_screen.dart';
 
-// --- SHOWCASE / PRODUCTS ---
+// --- SHOWCASE ---
 import '../features/showcase/screens/showcase_list.dart';
 import '../features/showcase/screens/assemble_product_screen.dart';
 
@@ -84,7 +82,7 @@ final List<RouteBase> appRoutes = [
         path: '/supplies/edit/:id',
         builder: (context, state) {
           final id = state.pathParameters['id']!;
-          return SupplyEditScreen(id: id);
+          return SupplyCreateScreen(editId: id);
         },
       ),
 
