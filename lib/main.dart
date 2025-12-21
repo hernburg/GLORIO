@@ -63,6 +63,7 @@ void main() async {
   final writeoffService = WriteoffService(
     materialsRepo: materialsRepo,
     writeoffRepo: writeoffRepo,
+    supplyRepo: supplyRepo,
   );
 
   final reportsService = ReportsService(

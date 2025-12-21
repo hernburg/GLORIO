@@ -23,6 +23,7 @@ class ReportExporter {
     required ReportRange range,
     required ReportSection section,
   }) async {
+    final origin = _shareOrigin(context);
     final period = reports.resolvePeriod(range);
     final data = _collect(reports, period);
 
@@ -56,14 +57,16 @@ class ReportExporter {
 
     final bytes = await doc.save();
     final path = await _writeTemp(bytes, 'report_${section.name}_${range.name}.pdf');
-    await Share.shareXFiles([XFile(path)], text: 'Отчёт: ${_sectionTitle(section)} (${_periodLabel(range)})');
+    await _shareFile(path, 'Отчёт: ${_sectionTitle(section)} (${_periodLabel(range)})', origin);
   }
 
   static Future<void> exportExcelSection({
+    required BuildContext context,
     required ReportsService reports,
     required ReportRange range,
     required ReportSection section,
   }) async {
+    final origin = _shareOrigin(context);
     final period = reports.resolvePeriod(range);
     final data = _collect(reports, period);
 
@@ -87,7 +90,7 @@ class ReportExporter {
 
     final bytes = Uint8List.fromList(excel.encode()!);
     final path = await _writeTemp(bytes, 'report_${section.name}_${range.name}.xlsx');
-    await Share.shareXFiles([XFile(path)], text: 'Отчёт: ${_sectionTitle(section)} (${_periodLabel(range)})');
+    await _shareFile(path, 'Отчёт: ${_sectionTitle(section)} (${_periodLabel(range)})', origin);
   }
 
   static Future<void> exportPdf({
@@ -95,6 +98,8 @@ class ReportExporter {
     required ReportsService reports,
     required ReportRange range,
   }) async {
+    final origin = _shareOrigin(context);
+
     final period = reports.resolvePeriod(range);
     final sales = reports.salesReport(period);
     final profit = reports.profitReport(period);
@@ -173,7 +178,7 @@ class ReportExporter {
 
     final bytes = await doc.save();
     final path = await _writeTemp(bytes, 'report_${range.name}.pdf');
-    await Share.shareXFiles([XFile(path)], text: 'Отчёт (${_periodLabel(range)})');
+    await _shareFile(path, 'Отчёт (${_periodLabel(range)})', origin);
   }
 
   static Future<void> exportExcel({
@@ -181,6 +186,8 @@ class ReportExporter {
     required ReportsService reports,
     required ReportRange range,
   }) async {
+    final origin = _shareOrigin(context);
+
     final period = reports.resolvePeriod(range);
     final sales = reports.salesReport(period);
     final profit = reports.profitReport(period);
@@ -248,7 +255,23 @@ class ReportExporter {
 
     final bytes = Uint8List.fromList(excel.encode()!);
     final path = await _writeTemp(bytes, 'report_${range.name}.xlsx');
-    await Share.shareXFiles([XFile(path)], text: 'Отчёт (${_periodLabel(range)})');
+    await _shareFile(path, 'Отчёт (${_periodLabel(range)})', origin);
+  }
+
+  static Future<void> _shareFile(String path, String text, Rect origin) async {
+    await Share.shareXFiles(
+      [XFile(path)],
+      text: text,
+      sharePositionOrigin: origin,
+    );
+  }
+
+  static Rect _shareOrigin(BuildContext context) {
+    final renderBox = context.findRenderObject() as RenderBox?;
+    final box = renderBox ?? Overlay.of(context).context.findRenderObject() as RenderBox?;
+    return box == null
+        ? const Rect.fromLTWH(0, 0, 1, 1)
+        : box.localToGlobal(Offset.zero) & (box.size.isEmpty ? const Size(1, 1) : box.size);
   }
 
   static Future<String> _writeTemp(Uint8List bytes, String fileName) async {

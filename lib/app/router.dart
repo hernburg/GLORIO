@@ -12,6 +12,7 @@ import '../features/supplies/screens/supply_create_screen.dart';
 // --- SHOWCASE ---
 import '../features/showcase/screens/showcase_list.dart';
 import '../features/showcase/screens/assemble_product_screen.dart';
+import '../features/showcase/screens/product_view_screen.dart';
 
 // --- SALES ---
 import '../features/sales/screens/sales_list_screen.dart';
@@ -100,6 +101,13 @@ final List<RouteBase> appRoutes = [
         builder: (context, state) {
           final id = state.pathParameters['id']!;
           return AssembleProductScreen(editId: id);
+        },
+      ),
+      GoRoute(
+        path: '/product_view/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return ProductViewScreen(productId: id);
         },
       ),
 

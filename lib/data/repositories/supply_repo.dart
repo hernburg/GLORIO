@@ -161,6 +161,8 @@ class SupplyRepository extends ChangeNotifier {
     required double qty,
   }) {
     debugPrint('SupplyRepository.consumeMaterial: material=$materialKey qty=$qty');
+    // сразу уменьшаем общий остаток материала
+    materialsRepo.reduceQuantity(materialKey, qty);
     final sortedSupplies = [...supplies]
       ..sort((a, b) => a.date.compareTo(b.date));
 

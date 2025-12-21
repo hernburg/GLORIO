@@ -1,14 +1,17 @@
 import '../models/writeoff.dart';
 import '../repositories/materials_repo.dart';
+import '../repositories/supply_repo.dart';
 import '../repositories/writeoff_repo.dart';
 
 class WriteoffService {
   final MaterialsRepo materialsRepo;
   final WriteoffRepository writeoffRepo;
+  final SupplyRepository supplyRepo;
 
   WriteoffService({
     required this.materialsRepo,
     required this.writeoffRepo,
+    required this.supplyRepo,
   });
 
   /// Списать испорченный товар с учётом количества и фиксацией причины
@@ -29,11 +32,16 @@ class WriteoffService {
       throw ArgumentError('Количество для списания должно быть > 0');
     }
 
+    final available = material.quantity;
+    if (normalizedQty > available) {
+      throw ArgumentError('Недостаточно остатка для списания');
+    }
+
     final id = DateTime.now().millisecondsSinceEpoch.toString();
     final costPerUnit = material.costPerUnit;
 
-    // уменьшаем остаток на складе
-    materialsRepo.reduceQuantity(materialKey, normalizedQty);
+    // уменьшаем остаток на складе и в конкретных поставках (FIFO)
+    supplyRepo.consumeMaterial(materialKey: materialKey, qty: normalizedQty);
 
     final writeoff = Writeoff(
       id: id,

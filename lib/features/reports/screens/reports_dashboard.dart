@@ -41,7 +41,8 @@ class _ReportsDashboardState extends State<ReportsDashboard> {
           left: GlorioSpacing.page,
           right: GlorioSpacing.page,
           top: MediaQuery.of(context).viewPadding.top + GlorioSpacing.page,
-          bottom: GlorioSpacing.page,
+          // добавляем запас снизу, чтобы кнопки экспортов не перекрывались нижним меню
+          bottom: MediaQuery.of(context).viewPadding.bottom + GlorioSpacing.page + 96,
         ),
         children: [
           Row(
@@ -69,7 +70,7 @@ class _ReportsDashboardState extends State<ReportsDashboard> {
             period,
             profit,
             onPdf: () => _runExport(() => ReportExporter.exportPdfSection(context: context, reports: reports, range: _range, section: ReportSection.summary)),
-            onExcel: () => _runExport(() => ReportExporter.exportExcelSection(reports: reports, range: _range, section: ReportSection.summary)),
+            onExcel: () => _runExport(() => ReportExporter.exportExcelSection(context: context, reports: reports, range: _range, section: ReportSection.summary)),
           ),
           const SizedBox(height: 16),
 
@@ -77,28 +78,28 @@ class _ReportsDashboardState extends State<ReportsDashboard> {
             sales: sales,
             showcaseCount: reports.showcaseRepo.products.length,
             onPdf: () => _runExport(() => ReportExporter.exportPdfSection(context: context, reports: reports, range: _range, section: ReportSection.sales)),
-            onExcel: () => _runExport(() => ReportExporter.exportExcelSection(reports: reports, range: _range, section: ReportSection.sales)),
+            onExcel: () => _runExport(() => ReportExporter.exportExcelSection(context: context, reports: reports, range: _range, section: ReportSection.sales)),
           ),
           const SizedBox(height: 16),
 
           _SupplyCard(
             supply: supply,
             onPdf: () => _runExport(() => ReportExporter.exportPdfSection(context: context, reports: reports, range: _range, section: ReportSection.supply)),
-            onExcel: () => _runExport(() => ReportExporter.exportExcelSection(reports: reports, range: _range, section: ReportSection.supply)),
+            onExcel: () => _runExport(() => ReportExporter.exportExcelSection(context: context, reports: reports, range: _range, section: ReportSection.supply)),
           ),
           const SizedBox(height: 16),
 
           _StockCard(
             stock: stock,
             onPdf: () => _runExport(() => ReportExporter.exportPdfSection(context: context, reports: reports, range: _range, section: ReportSection.stock)),
-            onExcel: () => _runExport(() => ReportExporter.exportExcelSection(reports: reports, range: _range, section: ReportSection.stock)),
+            onExcel: () => _runExport(() => ReportExporter.exportExcelSection(context: context, reports: reports, range: _range, section: ReportSection.stock)),
           ),
           const SizedBox(height: 16),
 
           _LoyaltyCard(
             loyalty: loyalty,
             onPdf: () => _runExport(() => ReportExporter.exportPdfSection(context: context, reports: reports, range: _range, section: ReportSection.loyalty)),
-            onExcel: () => _runExport(() => ReportExporter.exportExcelSection(reports: reports, range: _range, section: ReportSection.loyalty)),
+            onExcel: () => _runExport(() => ReportExporter.exportExcelSection(context: context, reports: reports, range: _range, section: ReportSection.loyalty)),
           ),
           const SizedBox(height: 16),
 
@@ -106,7 +107,7 @@ class _ReportsDashboardState extends State<ReportsDashboard> {
             cashflow: cashflow,
             writeoff: writeoff,
             onPdf: () => _runExport(() => ReportExporter.exportPdfSection(context: context, reports: reports, range: _range, section: ReportSection.cashflow)),
-            onExcel: () => _runExport(() => ReportExporter.exportExcelSection(reports: reports, range: _range, section: ReportSection.cashflow)),
+            onExcel: () => _runExport(() => ReportExporter.exportExcelSection(context: context, reports: reports, range: _range, section: ReportSection.cashflow)),
           ),
           const SizedBox(height: 16),
 

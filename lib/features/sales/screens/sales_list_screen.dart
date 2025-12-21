@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../ui/app_card.dart';
 import '../../../ui/app_button.dart';
+import '../../../ui/app_image.dart';
 
 import '../../../data/models/assembled_product.dart';
 import '../../../data/models/sale.dart';
@@ -135,30 +136,40 @@ class _SalesListScreenState extends State<SalesListScreen> {
         final p = products[i];
 
         return AppCard(
-          child: Column(
+          onTap: () => context.push('/product_view/${p.id}'),
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-        Text(p.name, style: GlorioText.heading),
-              const SizedBox(height: 6),
-              Text('Себестоимость: ${p.costPrice.toStringAsFixed(0)} ₽', style: GlorioText.muted),
-              Text('Цена продажи: ${p.sellingPrice.toStringAsFixed(0)} ₽', style: GlorioText.body),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: AppButton(
-                      text: 'Продать',
-                      onTap: () => _sell(p),
+              AppImage.square(p.photoUrl, size: 84),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(p.name, style: GlorioText.heading),
+                    const SizedBox(height: 6),
+                    Text('Себестоимость: ${p.costPrice.toStringAsFixed(0)} ₽', style: GlorioText.muted),
+                    Text('Цена продажи: ${p.sellingPrice.toStringAsFixed(0)} ₽', style: GlorioText.body),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: AppButton(
+                            text: 'Продать',
+                            onTap: () => _sell(p),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: AppButton(
+                            text: 'Удалить',
+                            onTap: () => _dismantle(p),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: AppButton(
-                      text: 'Удалить',
-                      onTap: () => _dismantle(p),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),
@@ -188,12 +199,22 @@ class _SalesListScreenState extends State<SalesListScreen> {
         final s = sales[i];
         return AppCard(
           onTap: () => context.push('/sale_info/${s.id}'),
-          child: Column(
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-        Text(s.product.name, style: GlorioText.heading),
-        Text('Итог: ${s.total.toStringAsFixed(0)} ₽', style: GlorioText.body),
-        Text('Дата: ${s.date.day}.${s.date.month}.${s.date.year}', style: GlorioText.muted),
+              AppImage.square(s.product.photoUrl, size: 72),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(s.product.name, style: GlorioText.heading),
+                    const SizedBox(height: 4),
+                    Text('Итог: ${s.total.toStringAsFixed(0)} ₽', style: GlorioText.body),
+                    Text('Дата: ${s.date.day}.${s.date.month}.${s.date.year}', style: GlorioText.muted),
+                  ],
+                ),
+              ),
             ],
           ),
         );
