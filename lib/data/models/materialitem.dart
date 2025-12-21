@@ -1,20 +1,38 @@
-import 'package:uuid/uuid.dart';
+import 'package:hive/hive.dart';
 
-final _uuid = Uuid();
+part 'materialitem.g.dart';
 
-class MaterialItem {
+@HiveType(typeId: 5)
+class MaterialItem extends HiveObject {
+  @HiveField(0)
   final String id;
+
+  @HiveField(1)
   final String name;
-  final double quantity;        // Текущий остаток
-  final double costPerUnit;     // Себестоимость
-  final String? photoUrl;       // Фото материала
-  final String supplyId;        // Из какой поставки
-  final String categoryId;      // Категория (цветы, трава, упаковка...)
-  final String categoryName;    // Название категории для отображения
-  final bool isInfinite;        // Неиссякаемый материал (лента, упаковка)
+
+  @HiveField(2)
+  final double quantity;
+
+  @HiveField(3)
+  final double costPerUnit;
+
+  @HiveField(4)
+  final String? photoUrl;
+
+  @HiveField(5)
+  final String supplyId;
+
+  @HiveField(6)
+  final String categoryId;
+
+  @HiveField(7)
+  final String categoryName;
+
+  @HiveField(8)
+  final bool isInfinite;
 
   MaterialItem({
-    String? id,
+    required this.id,
     required this.name,
     required this.quantity,
     required this.costPerUnit,
@@ -23,7 +41,7 @@ class MaterialItem {
     required this.categoryId,
     required this.categoryName,
     this.isInfinite = false,
-  }) : id = id ?? _uuid.v4();
+  });
 
   double get totalCost => quantity * costPerUnit;
 

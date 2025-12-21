@@ -1,6 +1,6 @@
 # flower_accounting_app
 
-A new Flutter project.
+Проект легкой системы учета для магазинов
 
 ## Getting Started
 

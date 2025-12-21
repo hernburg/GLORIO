@@ -14,4 +14,8 @@ class WriteoffRepository extends ChangeNotifier {
   List<Writeoff> forSupply(String supplyId) {
     return _writeoffs.where((w) => w.supplyId == supplyId).toList();
   }
+
+  List<Writeoff> forMaterial(String materialKey) {
+    return _writeoffs.where((w) => w.materialKey == materialKey).toList();
+  }
 }

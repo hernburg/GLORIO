@@ -1,19 +1,34 @@
-class Ingredient {
-  /// ID материала (цветок, лента и т.п.)
-  final String materialId;
+import 'package:hive/hive.dart';
 
-  /// Сколько единиц материала ушло в сборку
+part 'ingredient.g.dart';
+
+@HiveType(typeId: 21) // выбери ID, которого точно нет в проекте
+class Ingredient {
+  @HiveField(0)
+  final String materialKey;
+
+  @HiveField(1)
   final double quantity;
 
-  /// Себестоимость одной единицы
+  @HiveField(2)
   final double costPerUnit;
 
   Ingredient({
-    required this.materialId,
+    required this.materialKey,
     required this.quantity,
     required this.costPerUnit,
   });
 
-  /// Общая себестоимость этого ингредиента
   double get totalCost => quantity * costPerUnit;
+
+  Ingredient copyWith({
+    double? quantity,
+    double? costPerUnit,
+  }) {
+    return Ingredient(
+      materialKey: materialKey,
+      quantity: quantity ?? this.quantity,
+      costPerUnit: costPerUnit ?? this.costPerUnit,
+    );
+  }
 }

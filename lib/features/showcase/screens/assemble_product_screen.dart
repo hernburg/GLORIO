@@ -1,271 +1,240 @@
-import 'package:flower_accounting_app/core/widgets/add_button.dart';
+// AssembleProductScreen — create / edit bouquet
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+
+import '../../../ui/app_card.dart';
+import '../../../ui/add_button.dart';
+import '../../../ui/app_button.dart';
+import '../../../ui/app_input.dart';
+
+import '../../../design/glorio_colors.dart';
+import '../../../design/glorio_spacing.dart';
+import '../../../design/glorio_radius.dart';
+import '../../../design/glorio_text.dart';
 
 import '../../../data/models/ingredient.dart';
 import '../../../data/models/assembled_product.dart';
-import '../../../data/models/materialitem.dart';
-import '../../../data/repositories/materials_repo.dart';
+
 import '../../../data/repositories/showcase_repo.dart';
-import '../../../data/repositories/supply_repo.dart';
+import '../../../data/repositories/materials_repo.dart';
+
+import 'ingredient_selector.dart';
 
 class AssembleProductScreen extends StatefulWidget {
   final AssembledProduct? editProduct;
+  final String? editId;
 
-  const AssembleProductScreen({super.key, this.editProduct});
+  const AssembleProductScreen({super.key, this.editProduct, this.editId});
 
   @override
   State<AssembleProductScreen> createState() => _AssembleProductScreenState();
 }
 
 class _AssembleProductScreenState extends State<AssembleProductScreen> {
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController priceController = TextEditingController();
-  final TextEditingController searchCtrl = TextEditingController();
+  final nameController = TextEditingController();
+  final priceController = TextEditingController();
+  final List<Ingredient> ingredients = [];
+  String? photoUrl;
+  AssembledProduct? _originalProduct;
 
-  List<Ingredient> ingredients = [];
-  String searchQuery = "";
-
-  double get totalCost =>
-      ingredients.fold(0, (sum, item) => sum + item.totalCost);
+  double get totalCost => ingredients.fold(0, (s, i) => s + i.totalCost);
 
   @override
   void initState() {
     super.initState();
-
-    if (widget.editProduct != null) {
-      final p = widget.editProduct!;
-      nameController.text = p.name;
-      priceController.text = p.sellingPrice.toString();
-      ingredients.addAll(p.ingredients);
-    }
-
-    searchCtrl.addListener(() {
-      setState(() => searchQuery = searchCtrl.text.trim().toLowerCase());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (widget.editProduct != null) {
+        _applyProduct(widget.editProduct!);
+      } else if (widget.editId != null) {
+        final p = context.read<ShowcaseRepo>().getById(widget.editId!);
+        if (p != null) _applyProduct(p);
+      }
     });
   }
 
-  /// Добавление ингредиента
-  void addIngredient(MaterialItem material) {
-    final qtyController = TextEditingController();
+  void _applyProduct(AssembledProduct p) {
+    _originalProduct = p;
+    nameController.text = p.name;
+    priceController.text = p.sellingPrice.toString();
+    photoUrl = p.photoUrl;
+    ingredients.clear();
+    ingredients.addAll(p.ingredients.map((i) => i));
+    setState(() {});
+  }
 
-    showDialog(
+  Future<void> _openIngredientSelector() async {
+    final materials = context.read<MaterialsRepo>().materials;
+    final result = await showModalBottomSheet<Ingredient>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Добавить: ${material.name}'),
-        content: TextField(
-          controller: qtyController,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(labelText: 'Количество'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Отмена'),
-          ),
-          ElevatedButton(
-            child: const Text('Добавить'),
-            onPressed: () {
-              final qty = double.tryParse(qtyController.text) ?? 0;
-              if (qty > 0) {
-                final materials = context.read<MaterialsRepo>();
-                final supplies = context.read<SupplyRepository>();
-
-                materials.reduceQuantity(material.id, qty);
-                supplies.consumeFromSupply(material.supplyId, qty);
-
-                setState(() {
-                  ingredients.add(
-                    Ingredient(
-                      materialId: material.id,
-                      quantity: qty,
-                      costPerUnit: material.costPerUnit,
-                    ),
-                  );
-                });
-              }
-              Navigator.pop(ctx);
-            },
-          ),
-        ],
-      ),
+      isScrollControlled: true,
+      builder: (_) => IngredientSelector(materials: materials, selectedIngredients: ingredients),
     );
+
+    if (!mounted || result == null) return;
+    setState(() => ingredients.add(result));
+  }
+
+  Future<void> _pickPhoto() async {
+    final picker = ImagePicker();
+    final x = await picker.pickImage(source: ImageSource.gallery, maxWidth: 1200);
+    if (x == null) return;
+    setState(() => photoUrl = x.path);
   }
 
 
-  void saveProduct() {
+  void _saveProduct() {
     final name = nameController.text.trim();
-    final price = double.tryParse(priceController.text) ?? 0;
+    final price = double.tryParse(priceController.text.replaceAll(',', '.')) ?? 0;
 
     if (name.isEmpty || price <= 0 || ingredients.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Заполните все поля!')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Заполните все поля')));
       return;
     }
 
     final showcase = context.read<ShowcaseRepo>();
-    final materials = context.read<MaterialsRepo>();
-    final supplies = context.read<SupplyRepository>();
 
-    if (widget.editProduct == null) {
-      /// Создание нового
-      final product = AssembledProduct(
+    final isEditing = widget.editProduct != null || widget.editId != null;
+
+    if (isEditing) {
+      final existingId = widget.editProduct?.id ?? widget.editId!;
+
+      final updated = AssembledProduct(
+        id: existingId,
         name: name,
-        photoUrl: null,
+        photoUrl: photoUrl,
         ingredients: ingredients,
         costPrice: totalCost,
         sellingPrice: price,
       );
 
-      showcase.addProduct(product, materials, supplies);
-    } else {
-      /// Обновление
-      final updated = widget.editProduct!.copyWith(
-        name: name,
-        sellingPrice: price,
-        ingredients: ingredients,
-        costPrice: totalCost,
-      );
+      final oldMap = <String, double>{};
+      if (_originalProduct != null) {
+        for (final ing in _originalProduct!.ingredients) {
+          oldMap[ing.materialKey] = ing.quantity;
+        }
+      }
 
       showcase.updateProduct(updated);
+    } else {
+      showcase.addProduct(AssembledProduct(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        name: name,
+        photoUrl: photoUrl,
+        ingredients: ingredients,
+        costPrice: totalCost,
+        sellingPrice: price,
+      ));
     }
 
-    context.pop();
+  Navigator.of(context).pop();
   }
-
-
-  void _onExit() {
-    if (widget.editProduct != null) return;
-
-    final materials = context.read<MaterialsRepo>();
-    final supplies = context.read<SupplyRepository>();
-
-    for (final ing in ingredients) {
-      materials.returnQuantity(ing.materialId, ing.quantity);
-      supplies.returnFromBouquet(ing.materialId, ing.quantity);
-    }
-  }
-
 
   @override
   Widget build(BuildContext context) {
-    final allMaterials = context.watch<MaterialsRepo>().materials;
+    ImageProvider? image;
+    if (photoUrl != null && photoUrl!.isNotEmpty) {
+      final uri = Uri.tryParse(photoUrl!);
+      if (uri != null && uri.scheme.startsWith('http')) {
+        image = NetworkImage(photoUrl!);
+      } else if (!kIsWeb && File(photoUrl!).existsSync()) {
+        image = FileImage(File(photoUrl!));
+      }
+    }
 
-    // фильтрация
-    final filtered = allMaterials.where((m) {
-      final q = searchQuery;
-      return m.name.toLowerCase().contains(q) ||
-          m.categoryName.toLowerCase().contains(q);
-    }).toList();
-
-    return PopScope(
-      canPop: true,
-      onPopInvoked: (didPop) {
-        if (!didPop) {
-          _onExit();
-          context.pop();
-        }
-      },
-      child: Scaffold(
-        appBar: AppBar(title: const Text('Сборка букета')),
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: 'Название букета'),
+    return Scaffold(
+      backgroundColor: GlorioColors.background,
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewPadding.bottom + 96,
+          right: 6,
+        ),
+        child: AddButton(onTap: _openIngredientSelector),
+      ),
+      body: ListView(
+        padding: EdgeInsets.only(
+          left: GlorioSpacing.page,
+          right: GlorioSpacing.page,
+          top: MediaQuery.of(context).viewPadding.top + GlorioSpacing.page,
+          bottom: MediaQuery.of(context).viewPadding.bottom + GlorioSpacing.page,
+        ),
+        children: [
+          GestureDetector(
+            onTap: _pickPhoto,
+            child: AppCard(
+              padding: EdgeInsets.zero,
+              child: Container(
+                height: 160,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(GlorioRadius.card),
+                  color: GlorioColors.cardAlt,
+                  image: image != null ? DecorationImage(image: image, fit: BoxFit.cover) : null,
+                ),
+                alignment: Alignment.center,
+                child: image == null ? Text('Загрузить фото', style: GlorioText.muted) : null,
               ),
-              const SizedBox(height: 20),
+            ),
+          ),
 
-              Text('Себестоимость: ${totalCost.toStringAsFixed(0)} ₽',
-                  style: const TextStyle(fontSize: 18)),
-              const SizedBox(height: 20),
+          const SizedBox(height: 20),
 
-              TextField(
-                controller: priceController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Цена продажи'),
-              ),
-              const SizedBox(height: 20),
+          AppCard(
+            child: Column(
+              children: [
+                AppInput(controller: nameController, hint: 'Название букета'),
+                const SizedBox(height: GlorioSpacing.gap),
+                AppInput(controller: priceController, hint: 'Цена продажи', keyboardType: TextInputType.number),
+              ],
+            ),
+          ),
 
-              const Text('Ингредиенты:',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 10),
+          const SizedBox(height: 16),
 
-              // список выбранных ингредиентов
-              Expanded(
-                child: ListView(
-                  children: [
+          Text('Себестоимость: ${totalCost.toStringAsFixed(0)} ₽', style: GlorioText.heading),
 
-                    // 🔍 ПОИСК ПО МАТЕРИАЛАМ
-                    TextField(
-                      controller: searchCtrl,
-                      decoration: InputDecoration(
-                        hintText: "Поиск цветка...",
-                        prefixIcon: const Icon(Icons.search),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
+          const SizedBox(height: 24),
+
+          Text('Ингредиенты', style: GlorioText.heading),
+          const SizedBox(height: GlorioSpacing.gapSmall),
+
+          if (ingredients.isEmpty) const Text('Ингредиенты не добавлены', style: GlorioText.muted),
+
+          ...ingredients.asMap().entries.map((entry) {
+            final index = entry.key;
+            final ing = entry.value;
+            final material = context.read<MaterialsRepo>().getByKey(ing.materialKey);
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: AppCard(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(material?.name ?? ing.materialKey, style: GlorioText.heading),
+                            Text('${ing.quantity} × ${ing.costPerUnit} ₽ = ${ing.totalCost.toStringAsFixed(0)} ₽', style: GlorioText.muted),
+                          ],
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 10),
-
-                    // список выбранных ингредиентов
-                    ...ingredients.map((ing) {
-                      final mat = allMaterials.firstWhere((m) => m.id == ing.materialId);
-                      return ListTile(
-                        title: Text(mat.name),
-                        subtitle: Text(
-                          '${ing.quantity} × ${ing.costPerUnit} ₽ = ${ing.totalCost.toStringAsFixed(0)} ₽',
-                        ),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () {
-                            final materials = context.read<MaterialsRepo>();
-                            final supplies = context.read<SupplyRepository>();
-
-                            materials.returnQuantity(ing.materialId, ing.quantity);
-                            supplies.returnFromBouquet(mat.supplyId, ing.quantity);
-
-                            setState(() => ingredients.remove(ing));
-                          },
-                        ),
-                      );
-                    }),
-
-                    const SizedBox(height: 20),
-                    const Text("Добавить ингредиент:",
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 10),
-
-                    // Список материалов по поиску
-                    ...filtered.map((m) => ListTile(
-                      title: Text(m.name),
-                      subtitle: Text("Остаток: ${m.quantity}"),
-                      trailing: const Icon(Icons.add_circle, color: Colors.blue),
-                      onTap: () => addIngredient(m),
-                    )),
-                  ],
+                      IconButton(icon: const Icon(Icons.delete_outline), onPressed: () => setState(() => ingredients.removeAt(index))),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ),
+            );
+          }),
 
-        bottomNavigationBar: Padding(
-          padding: const EdgeInsets.all(12),
-          child: ElevatedButton(
-            onPressed: saveProduct,
-            child:
-                const Text('Сохранить букет', style: TextStyle(fontSize: 18)),
-          ),
-        ),
+          const SizedBox(height: 80),
+        ],
+      ),
+      bottomNavigationBar: SafeArea(
+        minimum: const EdgeInsets.only(left: 12, right: 12, bottom: 18, top: 10),
+        child: AppButton(text: 'Сохранить букет', onTap: _saveProduct),
       ),
     );
   }

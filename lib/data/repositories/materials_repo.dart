@@ -1,59 +1,124 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import '../models/materialitem.dart';
 
 class MaterialsRepo extends ChangeNotifier {
-  final List<MaterialItem> _materials = [];
+  static const boxName = 'materialsBox';
 
-  List<MaterialItem> get materials => List.unmodifiable(_materials);
+  Box<MaterialItem>? _box;
+  bool _isReady = false;
 
-  /// Добавление материала из поставки
+  // ---------------------------------------------------------------------------
+  // SAFE GETTERS
+  // ---------------------------------------------------------------------------
+  bool get isReady => _isReady;
+
+  List<MaterialItem> get materials {
+    if (!_isReady || _box == null) return [];
+    return _box!.values.toList();
+  }
+
+  // ---------------------------------------------------------------------------
+  // INIT
+  // ---------------------------------------------------------------------------
+  Future<void> init() async {
+    if (_isReady) return;
+
+    _box = await Hive.openBox<MaterialItem>(boxName);
+    _isReady = true;
+    notifyListeners();
+  }
+
+  // ---------------------------------------------------------------------------
+  // CRUD
+  // ---------------------------------------------------------------------------
   void addMaterial(MaterialItem item) {
-    _materials.add(item);
+    if (!_isReady || _box == null) return;
+    _box!.put(item.id, item); // id == materialKey
     notifyListeners();
   }
 
-  MaterialItem? getById(String id) {
-    try {
-      return _materials.firstWhere((m) => m.id == id);
-    } catch (_) {
-      return null;
+  /// 🔑 ОСНОВНОЙ МЕТОД
+  MaterialItem? getByKey(String materialKey) {
+    if (!_isReady || _box == null) return null;
+    return _box!.get(materialKey
+    );
+  }
+
+  bool exists(String materialKey) {
+    if (!_isReady || _box == null) return false;
+    return _box!.containsKey(materialKey);
+  }
+
+  void reduceQuantity(String materialKey, double qty) {
+    if (!_isReady || _box == null) return;
+
+    final m = _box!.get(materialKey);
+    if (m == null || m.isInfinite) return;
+
+    final newQty = (m.quantity - qty).clamp(0, double.infinity).toDouble();
+
+    _box!.put(materialKey, m.copyWith(quantity: newQty));
+    notifyListeners();
+  }
+
+  void returnQuantity(String materialKey, double qty) {
+    if (!_isReady || _box == null) return;
+
+    final m = _box!.get(materialKey);
+    if (m == null || m.isInfinite) return;
+
+    debugPrint('MaterialsRepo.returnQuantity: material=$materialKey qty=$qty old=${m.quantity} -> new=${m.quantity + qty}');
+    _box!.put(materialKey, m.copyWith(quantity: m.quantity + qty));
+    notifyListeners();
+  }
+
+  void removeMaterial(String materialKey) {
+    if (!_isReady || _box == null) return;
+    _box!.delete(materialKey);
+    notifyListeners();
+  }
+
+  // ---------------------------------------------------------------------------
+  // UPSERT FROM SUPPLY
+  // ---------------------------------------------------------------------------
+  void upsertFromSupplyItem({
+    required String materialKey,
+    required String name,
+    required String categoryId,
+    required String categoryName,
+    required double quantity,
+    required double costPerUnit,
+    required String supplyId,
+  }) {
+    if (!_isReady || _box == null) return;
+
+    final existing = _box!.get(materialKey);
+
+    if (existing == null) {
+      final item = MaterialItem(
+        id: materialKey, // 🔑 ключ
+        name: name,
+        quantity: quantity,
+        costPerUnit: costPerUnit,
+        supplyId: supplyId,
+        categoryId: categoryId,
+        categoryName: categoryName,
+        isInfinite: false,
+        photoUrl: null,
+      );
+
+      _box!.put(materialKey, item);
+    } else {
+      _box!.put(
+        materialKey,
+        existing.copyWith(
+          quantity: existing.quantity + quantity,
+          costPerUnit: costPerUnit,
+        ),
+      );
     }
-  }
 
-  /// Списание (уменьшение) остатка
-  void reduceQuantity(String id, double qty) {
-    final index = _materials.indexWhere((m) => m.id == id);
-    if (index == -1) return;
-
-    final material = _materials[index];
-
-    if (material.isInfinite) return;
-
-    double newQty = material.quantity - qty;
-    if (newQty < 0) newQty = 0;
-
-    _materials[index] = material.copyWith(quantity: newQty);
-    notifyListeners();
-  }
-
-  /// Возврат количества (если удалили ингредиент)
-  void returnQuantity(String id, double qty) {
-    final index = _materials.indexWhere((m) => m.id == id);
-    if (index == -1) return;
-
-    final material = _materials[index];
-
-    if (material.isInfinite) return;
-
-    _materials[index] =
-        material.copyWith(quantity: material.quantity + qty);
-
-    notifyListeners();
-  }
-
-  /// Полное удаление карточки материала
-  void removeMaterial(String id) {
-    _materials.removeWhere((m) => m.id == id);
     notifyListeners();
   }
 }

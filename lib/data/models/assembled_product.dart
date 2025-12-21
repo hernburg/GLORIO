@@ -1,14 +1,26 @@
-import 'package:uuid/uuid.dart';
+import 'package:hive/hive.dart';
 import 'ingredient.dart';
 
-final _uuid = Uuid();
+part 'assembled_product.g.dart';
 
-class AssembledProduct {
+@HiveType(typeId: 4)
+class AssembledProduct extends HiveObject {
+  @HiveField(0)
   final String id;
+
+  @HiveField(1)
   final String name;
+
+  @HiveField(2)
   final String? photoUrl;
+
+  @HiveField(3)
   final List<Ingredient> ingredients;
+
+  @HiveField(4)
   final double costPrice;
+
+  @HiveField(5)
   final double sellingPrice;
 
   AssembledProduct({
@@ -37,4 +49,3 @@ class AssembledProduct {
     );
   }
 }
-
